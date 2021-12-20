@@ -1,0 +1,26 @@
+name: Files Added Hook
+
+on:
+  # Trigger the workflow on push or pull request,
+  # but only for the master branch
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - id: files
+        uses: jitterbit/get-changed-files@v1
+        with:
+          format: 'json'
+      - run: |
+          readarray -t added_files <<<"$(jq -r '.[]' <<<'${{ steps.files.outputs.added }}')"
+          for added_file in ${added_files[@]}; do
+            if [[ $added_file == content/notices/* ]]; then
+              echo "File added: ${added_file}."
+            fi
+          done

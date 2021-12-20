@@ -1,6 +1,6 @@
-# Bug Alert
+title: About
 
-#### Bug Alert is a resource for the security community, acting as a notification service for high-impact and 0day vulnerabilities.
+####Bug Alert is a resource for the security community, acting as a notification service for high-impact and 0day vulnerabilities.####
 Hi, I'm Matthew Sullivan, a security practitioner, and the creator of Bug Alert.
 
 
@@ -15,6 +15,3 @@ has been issued, or a bulletin posted, it's simply too late.
 Bug Alert has exactly one goal: early notification for serious flaws in software. This process is conducted entirely in the open, via
 our project on [GitHub](https://github.com/sullivanmatt/SpicyVulns). Contributions are not only encouraged; worldwide assistance is going
 to be required if this project is to succeed.
-
-## Contributing
-Pull requests are welcome and encouraged.

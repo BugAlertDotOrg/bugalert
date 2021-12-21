@@ -22,10 +22,10 @@
   {% endif %}
 
   {% if USE_LESS %}
-    <link rel="stylesheet/less" type="text/css" href="{{ SITEURL }}/{{ THEME_STATIC_DIR }}/stylesheet/style.less">
+    <link rel="stylesheet/less" type="text/css" href="/{{ THEME_STATIC_DIR }}/stylesheet/style.less">
     <script src="//cdnjs.cloudflare.com/ajax/libs/less.js/2.5.1/less.min.js" type="text/javascript"></script>
   {% else %}
-    <link rel="stylesheet" type="text/css" href="{{ SITEURL }}/{{ THEME_STATIC_DIR }}/stylesheet/style.min.css">
+    <link rel="stylesheet" type="text/css" href="/{{ THEME_STATIC_DIR }}/stylesheet/style.min.css">
   {% endif %}
 
   {# DARK THEME STYLES #}
@@ -40,7 +40,7 @@
       {% elif THEME_COLOR_ENABLE_USER_OVERRIDE and THEME_COLOR|default("light") == "light" %}
         disabled="disabled"
       {% endif %}
-    href="{{ SITEURL }}/{{ THEME_STATIC_DIR }}/stylesheet/dark-theme.min.css">
+    href="/{{ THEME_STATIC_DIR }}/stylesheet/dark-theme.min.css">
   {% endif %}
 
   {# PYGMENTS STYLES #}
@@ -55,7 +55,7 @@
           {% elif THEME_COLOR_ENABLE_USER_OVERRIDE and THEME_COLOR|default("light") == "light" %}
             disabled="disabled"
           {% endif %}
-          href="{{ SITEURL }}/{{ THEME_STATIC_DIR }}/pygments/{{ PYGMENTS_STYLE_DARK or PYGMENTS_STYLE or 'monokai' }}.min.css">
+          href="/{{ THEME_STATIC_DIR }}/pygments/{{ PYGMENTS_STYLE_DARK or PYGMENTS_STYLE or 'monokai' }}.min.css">
   {% endif %}
   {% if THEME_COLOR_AUTO_DETECT_BROWSER_PREFERENCE or not THEME_COLOR or THEME_COLOR == "light" %}
     <link id="pygments-light-theme" rel="stylesheet" type="text/css"
@@ -66,24 +66,24 @@
               media="(prefers-color-scheme: light), (prefers-color-scheme: no-preference)"
             {% endif %}
           {% endif %}
-          href="{{ SITEURL }}/{{ THEME_STATIC_DIR }}/pygments/{{ PYGMENTS_STYLE|default('github') }}.min.css">
+          href="/{{ THEME_STATIC_DIR }}/pygments/{{ PYGMENTS_STYLE|default('github') }}.min.css">
   {% endif %}
 
   {% if PLUGINS and 'tipue_search' in PLUGINS %}
-    <script src="{{ SITEURL }}/{{ THEME_STATIC_DIR }}/tipuesearch/jquery.min.js"></script>
-    <script src="{{ SITEURL }}/{{ THEME_STATIC_DIR }}/tipuesearch/tipuesearch.min.js"></script>
-    <script src="{{ SITEURL }}/{{ THEME_STATIC_DIR }}/tipuesearch/tipuesearch.min.js"></script>
-    <script src="{{ SITEURL }}/{{ THEME_STATIC_DIR }}/tipuesearch/tipuesearch_set.min.js"></script>
-    <script src="{{ SITEURL }}/tipuesearch_content.js"></script>
-    <link rel="stylesheet" href="{{ SITEURL }}/{{ THEME_STATIC_DIR }}/tipuesearch/tipuesearch.min.css" />
+    <script src="/{{ THEME_STATIC_DIR }}/tipuesearch/jquery.min.js"></script>
+    <script src="/{{ THEME_STATIC_DIR }}/tipuesearch/tipuesearch.min.js"></script>
+    <script src="/{{ THEME_STATIC_DIR }}/tipuesearch/tipuesearch.min.js"></script>
+    <script src="/{{ THEME_STATIC_DIR }}/tipuesearch/tipuesearch_set.min.js"></script>
+    <script src="/tipuesearch_content.js"></script>
+    <link rel="stylesheet" href="/{{ THEME_STATIC_DIR }}/tipuesearch/tipuesearch.min.css" />
   {% endif %}
 
-  <link rel="stylesheet" type="text/css" href="{{ SITEURL }}/{{ THEME_STATIC_DIR }}/font-awesome/css/fontawesome.css">
-  <link rel="stylesheet" type="text/css" href="{{ SITEURL }}/{{ THEME_STATIC_DIR }}/font-awesome/css/brands.css">
-  <link rel="stylesheet" type="text/css" href="{{ SITEURL }}/{{ THEME_STATIC_DIR }}/font-awesome/css/solid.css">
+  <link rel="stylesheet" type="text/css" href="/{{ THEME_STATIC_DIR }}/font-awesome/css/fontawesome.css">
+  <link rel="stylesheet" type="text/css" href="/{{ THEME_STATIC_DIR }}/font-awesome/css/brands.css">
+  <link rel="stylesheet" type="text/css" href="/{{ THEME_STATIC_DIR }}/font-awesome/css/solid.css">
 
   {% if CUSTOM_CSS %}
-    <link href="{{ SITEURL }}/{{ CUSTOM_CSS }}" rel="stylesheet">
+    <link href="/{{ CUSTOM_CSS }}" rel="stylesheet">
   {% endif %}
 
   {% if FEED_ALL_ATOM %}
@@ -117,15 +117,15 @@
 
   {% if REL_CANONICAL %}
     {% if page %}
-      <link rel="canonical" href="{{ SITEURL }}/{{ page.url }}">
+      <link rel="canonical" href="/{{ page.url }}">
     {% elif article %}
-      <link rel="canonical" href="{{ SITEURL }}/{{ article.url }}">
+      <link rel="canonical" href="/{{ article.url }}">
     {% elif page_name == 'index' and not articles_previous_page %}
       <link rel="canonical" href="{{ SITEURL }}">
     {% elif author or category or tag or page_name == 'index' %}
-      <link rel="canonical" href="{{ SITEURL }}/{{ articles_page.url }}">
+      <link rel="canonical" href="/{{ articles_page.url }}">
     {% else %}
-      <link rel="canonical" href="{{ SITEURL }}/{{ output_file }}">
+      <link rel="canonical" href="/{{ output_file }}">
     {% endif %}
   {% endif %}
   {% block meta %}
@@ -159,7 +159,7 @@
         {% if SITELOGO %}
         <img src="{{ SITELOGO }}" alt="{{ SITETITLE }}" title="{{ SITETITLE }}">
         {% else %}
-        <img src="{{ SITEURL }}/{{ THEME_STATIC_DIR }}/img/profile.png" alt="{{ SITETITLE }}" title="{{ SITETITLE }}">
+        <img src="/{{ THEME_STATIC_DIR }}/img/profile.png" alt="{{ SITETITLE }}" title="{{ SITETITLE }}">
         {% endif %}
       </a>
 
@@ -197,7 +197,7 @@
             {% for page in pages %}
               <li>
                 <a target="{{ get_target(SITEURL) }}"
-                   href="{{ SITEURL }}/{{ page.url }}{% if not DISABLE_URL_HASH %}#{{ page.slug }}{% endif %}">
+                   href="/{{ page.url }}{% if not DISABLE_URL_HASH %}#{{ page.slug }}{% endif %}">
                   {{ page.title }}
                 </a>
               </li>
@@ -247,7 +247,7 @@
 
     {% if MAIN_MENU %}
     <nav>
-      <a href="{{ SITEURL }}">{{ _('Home') }}</a>
+      <a href="/">{{ _('Home') }}</a>
 
       {% for title, link in MENUITEMS %}
       <a href="{{ link }}">{{ _(title) }}</a>

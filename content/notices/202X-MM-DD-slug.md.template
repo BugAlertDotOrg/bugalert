@@ -3,6 +3,6 @@ Date: 202X-MM-DD HH:MM <DATE IN AMERICA/NEW_YORK>
 Category: Spice Level <1, 2, OR 3, SEE GUIDANCE IN README>
 Tags: <COMMA-SEPARATED LIST OF RELEVANT COMPONENTS, E.G. 'Java', 'Jackson Databind', ETC.>
 Slug: <NAME OF IMPACTED PRODUCT OR COMPONENT>
-Summary: A <VULN TYPE> vulnerability has been found in <NAME OF IMPACTED PRODUCT OR COMPONENT>, which <'is easily exploited in common configurations', 'can be exploited in certain specific configurations', OR 'is not easily exploited, but has high impact'>.
+Summary: A <VULN TYPE> vulnerability has been found in <NAME OF IMPACTED PRODUCT OR COMPONENT>. This issue <'is easily exploited in common configurations', 'can be exploited in certain specific configurations', OR 'is not easily exploited, but has high impact'>, and has been assigned a bug alert severity of <'critical', 'very high', OR 'high'>.
 
 On <VERBOSE DATE IN AMERICA/NEW_YORK, E.G. 'Tuesday, December 9th, 2021'>, [...]

@@ -4,7 +4,7 @@ AUTHOR = "Bug Alert Contributors"
 SITEURL = "https://bugalert.org"
 SITENAME = "Bug Alert"
 SITETITLE = "Bug Alert"
-SITESUBTITLE = "Immediate notification of critical vulnerabilities."
+SITESUBTITLE = "A service for alerting security and IT professionals of high-impact and 0day vulnerabilities."
 SITEDESCRIPTION = "Flex - The minimalist Pelican theme."
 SITELOGO = '/images/bug.svg'
 FAVICON = '/images/bug.svg'
@@ -44,7 +44,7 @@ DATE_FORMATS = {
 }
 
 FEED_ALL_ATOM = "feeds/all.atom.xml"
-FEED_ALL_RSS = "feeds/all.xml"
+#FEED_ALL_RSS = "feeds/all.xml"
 CATEGORY_FEED_ATOM = "feeds/{slug}.atom.xml"
 TRANSLATION_FEED_ATOM = None
 AUTHOR_FEED_ATOM = None

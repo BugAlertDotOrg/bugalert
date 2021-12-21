@@ -6,9 +6,9 @@
 <meta name="keywords" content="{{ article.tags|join(', ')|escape }}">
 
 {% if article.translations -%}
-<link rel="alternate" href="{{ SITEURL }}/{{ article.url }}" hreflang="{{ article.lang }}" />
+<link rel="alternate" href="/{{ article.url }}" hreflang="{{ article.lang }}" />
 {% for a in article.translations %}
-<link rel="alternate" href="{{ SITEURL }}/{{ a.url }}" hreflang="{{ a.lang }}" />
+<link rel="alternate" href="/{{ a.url }}" hreflang="{{ a.lang }}" />
 {% endfor %}
 {% endif %}
 
@@ -28,7 +28,7 @@
     <p>
       {{ _('Posted on %(when)s in %(category)s',
            when=article.locale_date,
-           category='<a href="%s/%s">%s</a>'|format(SITEURL, article.category.url, article.category)|safe) }}
+           category='<a href="/%s">%s</a>'|format(article.category.url, article.category)|safe) }}
 
       {% if PLUGINS and 'post_stats' in PLUGINS %}
         &#8226; {{ _('%(minutes)s min read', minutes=article.stats['read_mins']) }}
@@ -47,13 +47,18 @@
   {% endif %}
 
   <div>
+    <h3>Summary</h3>
+    {{ article.summary }}
+  </div>
+  <div>
+    <h3>Details</h3>
     {{ article.content }}
   </div>
   <div class="tag-cloud">
     <p>
       {% if article.tags %}
       {% for tag in article.tags %}
-      <a href="{{ SITEURL }}/{{ tag.url }}">{{ tag }}</a>
+      <a href="/{{ tag.url }}">{{ tag }}</a>
       {% endfor %}
       {% endif %}
     </p>
@@ -75,7 +80,7 @@
     <h4>{{ _('You might enjoy') }}</h4>
     <ul class="related-posts">
     {% for related_post in article.related_posts %}
-      <li><a href="{{ SITEURL }}/{{ related_post.url }}">{{ related_post.title }}</a></li>
+      <li><a href="/{{ related_post.url }}">{{ related_post.title }}</a></li>
     {% endfor %}
     </ul>
   </div>
@@ -95,5 +100,7 @@
 
   {% include "partial/disqus.html" %}
   {% include "partial/isso.html" %}
+  <br><strong><a href="https://github.com/sullivanmatt/bugalert/pulls?q=is%3Apr+{{ article.slug }}"><i class="fas fa-comments"></i> Additional vulnerability discussion can be found on GitHub.</a></strong>
+  <br><a href="https://github.com/sullivanmatt/bugalert/tree/main/content/notices"><i class="fab fa-github"></i> Have information to contribute? Make a pull request!</a>
 </article>
 {% endblock %}

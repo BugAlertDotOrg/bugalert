@@ -11,6 +11,7 @@ env:
   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
   AWS_DEFAULT_REGION: us-east-1
   AWS_DEFAULT_OUTPUT: json
+  GCP_KEY: ${{ secrets.GCP_KEY }}
 
 jobs:
   build:
@@ -23,13 +24,15 @@ jobs:
         with:
           format: 'json'
       - run: |
-          sudo apt-get update && sudo apt-get install awscli -y
-          aws sts get-caller-identity --region us-east-1
+          ls -ltah
+          sudo apt-get update && sudo apt-get install awscli python3-pip -y
+          #pip3 install requests==2.26.0 pydub==0.25.1 google-cloud-texttospeech==2.9.0
+          pip3 install -Ur notice_communication/requirements.txt
+          #aws sts get-caller-identity --region us-east-1
           readarray -t added_files <<<"$(jq -r '.[]' <<<'${{ steps.files.outputs.added }}')"
           for added_file in ${added_files[@]}; do
             if [[ $added_file == content/notices/* ]]; then
               echo "File added: ${added_file}."
-              aws lambda invoke --function-name bugalert-lambda-prod --cli-binary-format raw-in-base64-out --payload "{ \"file\": \"${added_file}\" }" /tmp/response.json
-              cat /tmp/response.json
+              python3 notice_communication/__main__.py "${added_file}"
             fi
           done

@@ -9,7 +9,6 @@ on:
 env:
   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  AWS_DOES_THIS_WORK: Yes
   AWS_DEFAULT_REGION: us-east-1
   AWS_DEFAULT_OUTPUT: json
 
@@ -30,7 +29,7 @@ jobs:
           for added_file in ${added_files[@]}; do
             if [[ $added_file == content/notices/* ]]; then
               echo "File added: ${added_file}."
-              aws lambda invoke --function-name bugalert-lambda-prod --payload "{ \"file\": \"${added_file}\" }" /tmp/response.json
+              aws lambda invoke --function-name bugalert-lambda-prod --cli-binary-format raw-in-base64-out --payload "{ \"file\": \"${added_file}\" }" /tmp/response.json
               cat /tmp/response.json
             fi
           done

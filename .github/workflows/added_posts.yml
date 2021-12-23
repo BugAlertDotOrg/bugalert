@@ -22,8 +22,7 @@ jobs:
           format: 'json'
       - run: |
           sudo apt-get update && sudo apt-get install awscli -y
-          aws --version
-          aws sts get-caller-identity
+          aws sts get-caller-identity --region us-east-1
           readarray -t added_files <<<"$(jq -r '.[]' <<<'${{ steps.files.outputs.added }}')"
           for added_file in ${added_files[@]}; do
             if [[ $added_file == content/notices/* ]]; then

@@ -19,20 +19,21 @@ jobs:
     runs-on: ubuntu-latest
     environment: bugalert-invoke-lambda
     steps:
+      - uses: actions/checkout@v2
       - id: files
         uses: jitterbit/get-changed-files@v1
         with:
           format: 'json'
       - run: |
-          ls -ltah
+          ls -ltah "${GITHUB_WORKSPACE}"
           sudo apt-get update && sudo apt-get install awscli python3-pip -y
           #pip3 install requests==2.26.0 pydub==0.25.1 google-cloud-texttospeech==2.9.0
-          pip3 install -Ur notice_communication/requirements.txt
+          pip3 install -Ur "${GITHUB_WORKSPACE}/requirements.txt"
           #aws sts get-caller-identity --region us-east-1
           readarray -t added_files <<<"$(jq -r '.[]' <<<'${{ steps.files.outputs.added }}')"
           for added_file in ${added_files[@]}; do
             if [[ $added_file == content/notices/* ]]; then
               echo "File added: ${added_file}."
-              python3 notice_communication/__main__.py "${added_file}"
+              python3 "${GITHUB_WORKSPACE}/notice_communication/__main__.py" "${added_file}"
             fi
           done

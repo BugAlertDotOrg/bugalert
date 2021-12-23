@@ -16,8 +16,8 @@ jobs:
       - id: files
         uses: jitterbit/get-changed-files@v1
         env:
-            AWS_ACCESS_KEY_ID:{{ secret.AWS_ACCESS_KEY_ID }}
-            AWS_SECRET_ACCESS_KEY:{{ secret.AWS_SECRET_ACCESS_KEY }}
+            AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}}
+            AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
         with:
           format: 'json'
       - run: |

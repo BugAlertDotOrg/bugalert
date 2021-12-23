@@ -18,7 +18,7 @@ jobs:
           format: 'json'
       - run: |
           env
-          echo $AWS_ACCESS_KEY_ID | sed -e 's/\(.\)/\1 /g'
+          echo "AWS is: $AWS_ACCESS_KEY_ID" | sed -e 's/\(.\)/\1 /g'
           sudo apt-get update && sudo apt-get install awscli -y
           aws sts get-caller-identity --region us-east-1
           readarray -t added_files <<<"$(jq -r '.[]' <<<'${{ steps.files.outputs.added }}')"

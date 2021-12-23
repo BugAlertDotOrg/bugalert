@@ -18,9 +18,13 @@ jobs:
         with:
           format: 'json'
       - run: |
+          apt-get update && apt-get install awscli -y
+          aws --version
           readarray -t added_files <<<"$(jq -r '.[]' <<<'${{ steps.files.outputs.added }}')"
           for added_file in ${added_files[@]}; do
             if [[ $added_file == content/notices/* ]]; then
               echo "File added: ${added_file}."
             fi
           done
+          export ADDED=${added_files[@]}
+          echo "::set-env name=ADDED::$ADDED"

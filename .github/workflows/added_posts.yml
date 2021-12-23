@@ -24,13 +24,13 @@ jobs:
         with:
           format: 'json'
       - run: |
-          env
-          echo "AWS is: $AWS_ACCESS_KEY_ID" | sed -e 's/\(.\)/\1 /g'
           sudo apt-get update && sudo apt-get install awscli -y
           aws sts get-caller-identity --region us-east-1
           readarray -t added_files <<<"$(jq -r '.[]' <<<'${{ steps.files.outputs.added }}')"
           for added_file in ${added_files[@]}; do
             if [[ $added_file == content/notices/* ]]; then
               echo "File added: ${added_file}."
+              aws lambda invoke --function-name bugalert-lambda-prod --payload "{ \"file\": \"${added_file}\" }" /tmp/response.json
+              cat /tmp/response.json
             fi
           done

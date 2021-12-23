@@ -28,7 +28,7 @@ jobs:
           ls -ltah "${GITHUB_WORKSPACE}"
           sudo apt-get update && sudo apt-get install awscli python3-pip -y
           #pip3 install requests==2.26.0 pydub==0.25.1 google-cloud-texttospeech==2.9.0
-          pip3 install -Ur "${GITHUB_WORKSPACE}/requirements.txt"
+          pip3 install -Ur "${GITHUB_WORKSPACE}/notice_communication/requirements.txt"
           #aws sts get-caller-identity --region us-east-1
           readarray -t added_files <<<"$(jq -r '.[]' <<<'${{ steps.files.outputs.added }}')"
           for added_file in ${added_files[@]}; do

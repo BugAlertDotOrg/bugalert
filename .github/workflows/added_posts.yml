@@ -21,6 +21,7 @@ jobs:
         with:
           format: 'json'
       - run: |
+          env
           sudo apt-get update && sudo apt-get install awscli -y
           aws sts get-caller-identity --region us-east-1
           readarray -t added_files <<<"$(jq -r '.[]' <<<'${{ steps.files.outputs.added }}')"

@@ -11,11 +11,6 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
-    env:
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        AWS_DOES_THIS_WORK: Yes
-
     steps:
       - id: files
         uses: jitterbit/get-changed-files@v1
@@ -31,3 +26,9 @@ jobs:
               echo "File added: ${added_file}."
             fi
           done
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DOES_THIS_WORK: Yes
+          AWS_DEFAULT_REGION: us-east-1
+          AWS_DEFAULT_OUTPUT: json

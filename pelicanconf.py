@@ -5,7 +5,7 @@ SITEURL = "https://bugalert.org"
 SITENAME = "Bug Alert"
 SITETITLE = "Bug Alert"
 SITESUBTITLE = "A service for alerting security and IT professionals of high-impact and 0day vulnerabilities."
-SITEDESCRIPTION = "Flex - The minimalist Pelican theme."
+SITEDESCRIPTION = "A service for alerting security and IT professionals of high-impact and 0day vulnerabilities."
 SITELOGO = '/images/bug.svg'
 FAVICON = '/images/bug.svg'
 BROWSER_COLOR = "#333333"
@@ -55,40 +55,41 @@ USE_FOLDER_AS_CATEGORY = False
 MAIN_MENU = True
 HOME_HIDE_TAGS = True
 
-ARTICLE_URL = 'notices/{date:%Y}/{date:%m}/{date:%d}/{slug}/index.html'
-ARTICLE_SAVE_AS = 'notices/{date:%Y}/{date:%m}/{date:%d}/{slug}/index.html'
+ARTICLE_URL = 'content/notices/{date:%Y}-{date:%m}-{date:%d}-{slug}.html'
+ARTICLE_SAVE_AS = 'content/notices/{date:%Y}-{date:%m}-{date:%d}-{slug}.html'
 
+PAGE_URL = 'content/pages/{slug}.html'
+PAGE_SAVE_AS = 'content/pages/{slug}.html'
 
-ARCHIVES_SAVE_AS = 'notices/index.html'
-YEAR_ARCHIVE_SAVE_AS = 'notices/{date:%Y}/index.html'
-MONTH_ARCHIVE_SAVE_AS = 'notices/{date:%Y}/{date:%m}/index.html'
-DAY_ARCHIVE_SAVE_AS = 'notices/{date:%Y}/{date:%m}/{date:%d}/index.html'
+ARCHIVES_SAVE_AS = 'content/notices/index.html'
+YEAR_ARCHIVE_SAVE_AS = 'content/notices/{date:%Y}.html'
+MONTH_ARCHIVE_SAVE_AS = 'content/notices/{date:%Y}-{date:%m}.html'
+DAY_ARCHIVE_SAVE_AS = 'content/notices/{date:%Y}-{date:%m}-{date:%d}.html'
 
+AUTHORS_SAVE_AS = 'authors.html'
+AUTHOR_URL = 'authors/{slug}.html'
+AUTHOR_SAVE_AS = 'authors/{slug}.html'
 
-AUTHORS_SAVE_AS = 'authors/index.html'
-AUTHOR_URL = 'authors/{slug}/index.html'
-AUTHOR_SAVE_AS = 'authors/{slug}/index.html'
+CATEGORIES_SAVE_AS = 'categories.html'
+CATEGORY_URL = 'categories/{slug}.html'
+CATEGORY_SAVE_AS = 'categories/{slug}.html'
 
-
-CATEGORIES_SAVE_AS = 'categories/index.html'
-CATEGORY_URL = 'categories/{slug}/index.html'
-CATEGORY_SAVE_AS = 'categories/{slug}/index.html'
-
-
-TAGS_SAVE_AS = 'tags/index.html'
-TAG_URL = 'tags/{slug}/index.html'
-TAG_SAVE_AS = 'tags/{slug}/index.html'
+TAGS_SAVE_AS = 'tags.html'
+TAG_URL = 'tags/{slug}.html'
+TAG_SAVE_AS = 'tags/{slug}.html'
 
 
 SOCIAL = (
     ("github", "https://github.com/sullivanmatt/bugalert"),
+    ("twitter", "https://twitter.com/BugAlertDotOrg"),
     ("rss", "/feeds/all.atom.xml"),
 )
 
 MENUITEMS = (
-    ("About", "/pages/about.html"),
-    ("Categories", "/categories/index.html"),
-    ("Tags", "/tags/index.html"),
+    ("About", "/content/pages/about.html", ""),
+    ("Manage Notice Subscriptions", "/content/pages/subscriptions.html", ""),
+    ("Categories", "/categories.html", "nomobile"),
+    ("Tags", "/tags.html", "nomobile"),
 )
 
 CC_LICENSE = {

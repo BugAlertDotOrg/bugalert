@@ -9,26 +9,42 @@ widely-shared blog post, and 5 hours passed after that before I saw it up at the
 [Hacker News](https://news.ycombinator.com). By then, precious time for reacting had been completely
 lost; it was nearly midnight in my local timezone, and all the people I needed to mobilize were already in bed.
 
-There is no central clearinghouse for notifying security professionals about critical security issues. The process for
-issuing security bulletins from organizations like the [CISA](https://www.cisa.gov/) are both welcomed and
-well-intentioned, but by the time a CVE identifier has been issued, or a bulletin posted, it's simply too late.
+There is no central clearinghouse for notifying security professionals about critical security issues in
+widely-used software. The process for issuing security bulletins from organizations like the
+[CISA](https://www.cisa.gov/) are both welcomed and well-intentioned, but by the time a CVE
+identifier has been issued, or a bulletin posted, it's simply too late.
 
-Bug Alert has exactly one goal: rapid notification for serious flaws in software. This process is conducted entirely in the open, via
-our project on [GitHub](https://github.com/sullivanmatt/bugalert). Email/phone/SMS notification services are
-(obviously) not free, but my intent is to keep this effort funded by community/industry donations, if it is ever needed.
+Bug Alert has exactly one goal: rapid notification for serious flaws in widely-used software. This process
+is conducted entirely in the open, via our project on [GitHub](https://github.com/sullivanmatt/bugalert).
+Email/phone/SMS notification services are (obviously) not free, but my intent is to keep this effort
+funded by community/industry donations, if it is ever needed.
 
 **Contributions are highly encouraged!** We also need a team of volunteers from around the world who can review
 and rapidly merge GitHub pull requests detailing new issues, as they come in. Volunteers need to be kind, level-headed
 individuals who are willing to engage a diverse set of people in the security community with unwaivering professionalism
 and no ego. If that sounds like you, [open a GitHub issue letting us know!](https://github.com/sullivanmatt/bugalert/issues/new?labels=personnel&title=I+would+like+to+volunteer!&body=Tell+us+about+yourself.+We+want+to+ensure+volunteers+have+relevant+security+expertise,+so+please+include+information+and/or+links+related+to+your+skillset+or+past+projects.)
 
-## All About Notices
-Notices are the lifeblood of this service. The merging of a new notice kicks off the automated processes
+## What Are Notices & Contributing Your Knowledge
+Notices are the lifeblood of this service; they are the text that will explain to the community
+what they need to be worrying about, and why. The merging of a new notice kicks off the automated processes
 for alerting subscribers by phone, SMS, and email - a potentially expensive operation (telephony
-services aren't cheap!) that gets only one shot.
+services aren't cheap!) that gets only one shot. Notices will generally only be merged into this project
+for software in widespread use (think hundreds of thousands of installs), and **only if there is a
+large, immediate, demonstrable risk** to the systems that are running the vulnerable software.
 
-Notices are required to have several fields, the most important of which are 'Summary', 'Category'
-and 'Tags'. Always use the template found at `content/notices/202X-MM-DD-slug.md.template` to craft a
+If you want to submit a notice, simply fork this repository, follow the template in
+`content/notices/202X-MM-DD-slug.md.template` to author a new notice, and make a pull request.
+
+0day vulnerabilities will be the most commonly-reported issue for this project, but Bug Alert's
+notices are not *exclusive* to 0days. For example, when Log4j 2.15.0 was released to address a years-old
+issue with prior 2.X.X versions, the security community almost immediately found a vector for denial-of-service
+(not worthy of a Bug Alert notice). However, a day later, once the DoS issue had already been patched
+by 2.16.0, researchers found that the vector for DoS in 2.15.0 could also be used for remote code execution.
+Such a finding *would* be worthy of a Bug Alert notice, because 2.15.0 was likely to be in widespread use
+at the time the new vector for RCE was found.
+
+Notices are required to have several fields, the most important of which are *Summary*, *Category*,
+and *Tags*. Always use the template found at `content/notices/202X-MM-DD-slug.md.template` to craft a
 notice, and refer to this README for what acceptable values for summary, category, and tags should be.
 
 ### Assigning Severity
@@ -71,6 +87,19 @@ If the issue you want to report doesn't fit the descriptions above, it may be th
 is not of high enough impact to be served by this project. We appreciate that you took the time
 to consider reporting the issue to a wider audience, and will encourage you to share your
 knowledge on social media such as Twitter or Reddit's security-focused subreddits.
+
+Types of vulnerabilities *generally* outside the scope of Bug Alert's focus are described below.
+Use your judgement though, and don't hestitate to submit a notice if you are confident the wider
+security and IT communities need to know immediately about an issue.
+
+For example, while DoS vulnerabilities are generally out of scope, an attack that could
+crash-loop an nginx server in one packet would still be worthy of a notice.
+
+* Software not in widespread use
+* Denial of service
+* Protocol attacks (e.g. TLS cipher downgrade)
+* Attacks requiring local network access (e.g. Microsoft SMB RCEs)
+* Attacks heavily relying on user interaction (e.g. user must be tricked into downloading an executable)
 
 ### Summary
 Summary is the text which will be shared in notifications sent out to all subscribers.  It is

@@ -17,6 +17,17 @@
     <meta name="robots" content="{{ ROBOTS }}" />
   {% endif %}
 
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:site" content="BugAlert.org" />
+  <meta name="twitter:image" content="/images/bug.png" />
+  {% if page %}
+    <meta name="twitter:title" content="Bug Alert: {{ page.title }}" />
+  {% elif article %}
+    <meta name="twitter:title" content="Bug Alert: {{ article.title }}" />
+  {% else %}
+    <meta name="twitter:title" content="Bug Alert" />
+  {% endif %}
+
   {% if USE_GOOGLE_FONTS != False %}
   <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:ital,wght@0,400;0,700;1,400&family=Source+Sans+Pro:ital,wght@0,300;0,400;0,700;1,400&display=swap" rel="stylesheet">
   {% endif %}
@@ -249,16 +260,16 @@
     <nav>
       <a href="/">{{ _('Home') }}</a>
 
-      {% for title, link in MENUITEMS %}
-      <a href="{{ link }}">{{ _(title) }}</a>
+      {% for title, link, css_class in MENUITEMS %}
+      <a class="{{ css_class }} " href="{{ link }}">{{ _(title) }}</a>
       {% endfor %}
 
       {% if FEED_ALL_ATOM %}
-      <a href="{{ FEED_DOMAIN }}/{{ FEED_ALL_ATOM }}">{{ _('Atom') }}</a>
+      <a class="nomobile" href="{{ FEED_DOMAIN }}/{{ FEED_ALL_ATOM }}">{{ _('Atom') }}</a>
       {% endif %}
 
       {% if FEED_ALL_RSS %}
-      <a href="{{ FEED_DOMAIN }}/{{ FEED_ALL_RSS }}">{{ _('RSS') }}</a>
+      <a class="nomobile" href="{{ FEED_DOMAIN }}/{{ FEED_ALL_RSS }}">{{ _('RSS') }}</a>
       {% endif %}
     </nav>
     {% endif %}

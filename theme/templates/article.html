@@ -101,6 +101,6 @@
   {% include "partial/disqus.html" %}
   {% include "partial/isso.html" %}
   <br><strong><a href="https://github.com/sullivanmatt/bugalert/pulls?q=is%3Apr+{{ article.slug }}"><i class="fas fa-comments"></i> Additional vulnerability discussion can be found on GitHub.</a></strong>
-  <br><a href="https://github.com/sullivanmatt/bugalert/tree/main/content/notices"><i class="fab fa-github"></i> Have information to contribute? Make a pull request!</a>
+  <br><a href="https://github.com/sullivanmatt/bugalert/blob/main/{{ article.url.replace('html', 'md') }}"><i class="fab fa-github"></i> Have information to contribute? Make a pull request!</a>
 </article>
 {% endblock %}

@@ -4,6 +4,7 @@ import os
 import re
 import requests
 import sys
+import tweepy
 
 from google.cloud import texttospeech
 from requests_oauthlib import OAuth1Session
@@ -18,6 +19,7 @@ SCRIPT_PATH = os.path.dirname(os.path.realpath(__file__))
 sess = OAuth1Session(os.getenv('TEXT_EM_ALL_ID'),
                       client_secret=os.getenv('TEXT_EM_ALL_SECRET'),
                       resource_owner_key=os.getenv('TEXT_EM_ALL_TOKEN'))
+
 os.environ['PATH'] = "%s:%s" % (os.environ['PATH'], SCRIPT_PATH)
 from pydub import AudioSegment
 
@@ -26,7 +28,15 @@ def main():
         f.write(os.getenv('GCP_KEY'))
     os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = '/tmp/gcp.key'
 
-    summary = get_summary()
+    filename = sys.argv[1]
+    summary = get_summary(filename)
+
+    if os.getenv('TWITTER_BEARER_TOKEN'):
+        twitter = get_twitter_client()
+        url = "https://bugalert.org/%s" % filename.replace('md', 'html')
+        tweet = "%s %s #BugAlertNotice" % (("%s..." % summary[:220] if len(summary) > 220 else summary), url)
+        twitter.create_tweet(text=tweet)
+
     audio = generate_tts(summary)
 
     # The response's audio_content is binary.
@@ -38,15 +48,16 @@ def main():
 
     final = intro + notice
 
-    final_filename = os.path.basename(sys.argv[1]) + ".mp3"
+    final_filename = os.path.basename(filename) + ".mp3"
     final.export(final_filename, format="mp3")
     print(final_filename)
 
-    audio_id = upload_audio(final_filename)
-    print(audio_id)
+    if os.getenv('TEXT_EM_ALL_ID'):
+        audio_id = upload_audio(final_filename)
+        print(audio_id)
 
-    broadcast = create_broadcast(audio_id, final_filename)
-    print(broadcast)
+        broadcast = create_broadcast(audio_id, final_filename)
+        print(broadcast)
 
 
 def generate_tts(summary):
@@ -64,7 +75,7 @@ def generate_tts(summary):
     audio_config = texttospeech.AudioConfig(
         audio_encoding=texttospeech.AudioEncoding.MP3
         #speaking_rate=0.88
-)
+    )
 
     # Perform the text-to-speech request on the text input with the selected
     # voice parameters and audio file type
@@ -75,8 +86,7 @@ def generate_tts(summary):
     return response
 
 
-def get_summary():
-    filename = sys.argv[1]
+def get_summary(filename):
     f = open(filename, 'r')
     notice = f.read()
     f.close()
@@ -108,6 +118,15 @@ def create_broadcast(audioid, filename):
     response = sess.post(url, json=payload)
     return response.json()
 
+def get_twitter_client():
+    api = tweepy.Client(
+        bearer_token=os.getenv('TWITTER_BEARER_TOKEN'),
+        consumer_key=os.getenv('TWITTER_CONSUMER_KEY'),
+        consumer_secret=os.getenv('TWITTER_CONSUMER_SECRET'),
+        access_token=os.getenv('TWITTER_ACCESS_TOKEN'),
+        access_token_secret=os.getenv('TWITTER_ACCESS_TOKEN_SECRET')
+    )
+    return api
 
 if __name__ == '__main__':
     main()

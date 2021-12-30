@@ -106,10 +106,26 @@
       });
 
       $(window).on('load', function() {
+          var attempt_data_load = false;
+
           if (location.queryString && location.queryString.email && location.queryString.signature) {
               subscription_email = location.queryString.email;
               subscription_signature = location.queryString.signature;
+              attempt_data_load = true;
+
+              // Keep in browser storage for future visits.
+              localStorage.setItem('subscription_email', subscription_email);
+              localStorage.setItem('subscription_signature', subscription_signature);
+          } else if ("subscription_email" in localStorage && "subscription_signature" in localStorage) {
+              subscription_email = localStorage.getItem('subscription_email');
+              subscription_signature = localStorage.getItem('subscription_signature');
+              attempt_data_load = true;
+          }
+
+          if (attempt_data_load) {
               $('#verify-submit').html("Gathering information...");
+              localStorage.setItem('subscription_email', subscription_email);
+              localStorage.setItem('subscription_signature', subscription_signature);
 
               $.ajax({
                  type: "POST",
@@ -203,9 +219,10 @@
       }
 
       function load_subscription_selections(data) {
-          console.log(data)
           $('#verify-submit').hide();
           $('#manage-subscriptions').show();
+
+          $('#email').html(subscription_email);
 
           // If no data, we have nothing to pre-fill/pre-check.
           if (data === null) {

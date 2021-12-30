@@ -21,6 +21,9 @@ hmacsecret = os.getenv('HMACSECRET')
 hmacsecret = codecs.encode(hmacsecret)
 
 TEXTEMALL_BASE_DOMAIN = "staging-rest.call-em-all.com"
+sess = OAuth1Session(os.getenv('TEXT_EM_ALL_ID'),
+                     client_secret=os.getenv('TEXT_EM_ALL_SECRET'),
+                     resource_owner_key=os.getenv('TEXT_EM_ALL_TOKEN'))
 
 
 def respond_error(err, origin, status=400):
@@ -150,6 +153,8 @@ def lambda_handler(event, context):
             return respond_error("Record not found", origin, status=404)
 
     elif method == 'POST' and path == 'update':
+        categories = ["frameworks_libs_components", "operating_systems", "services_system_applications", "end_user_applications", "test"]
+
         phone_number = body.get('phone_number')
         phone_country_code = body.get('phone_country_code')
         if not phone_number or not phone_country_code:
@@ -181,6 +186,21 @@ def lambda_handler(event, context):
             ReturnValues="UPDATED_NEW"
         )
 
+        # Send a "you are opted in" message.
+        sms_opted_in = False
+        phone_opted_in = False
+        for category in categories:
+            if body.get(category) and 's' in body.get(category):
+                sms_opted_in = True
+            if body.get(category) and 'p' in body.get(category):
+                phone_opted_in = True
+
+        if sms_opted_in and phone_country_code == 1 and phone_number:
+            send_sms_confirmation(phone_number)
+
+        if phone_opted_in and phone_country_code == 1 and phone_number:
+            send_phone_confirmation(phone_number)
+
         return respond_success("{\"status\": \"success\"}", origin)
 
     return respond_error("Unsupported method %s" % method, origin, status=405)
@@ -188,13 +208,23 @@ def lambda_handler(event, context):
     #print(vars(event))
     #print(vars(context))
 
-    #sess = OAuth1Session(os.getenv('TEXT_EM_ALL_ID'),
-    #                     client_secret=os.getenv('TEXT_EM_ALL_SECRET'),
-    #                     resource_owner_key=os.getenv('TEXT_EM_ALL_TOKEN'))
+def send_sms_confirmation(phone_number):
+    conversation_id = make_conversation(phone_number)
+    send_message(conversation_id, "Bug Alert: you are opted in to SMS-based notices. Visit https://bugalert.org to manage notice subscriptions.")
 
+def send_phone_confirmation(phone_number):
+    conversation_id = make_conversation(phone_number)
+    send_message(conversation_id, "Bug Alert: you are opted in to phone-based notices. Please note that due to limitations with our telephony provider, calls will come from a different phone number, which you should save as a contact: +1 (507) 668-8567. Visit https://bugalert.org to manage notice subscriptions.")
 
-def add_contact(sess):
-    url = "https://%s/v1/broadcasts" % TEXTEMALL_BASE_DOMAIN
-    payload={'BroadcastName': filename, 'BroadcastType': 'Announcement', 'StartDate': '', 'CallerID': '5076688567', 'Audio': {'AudioID': audioid}, 'Lists': [{'ListID': '2'}]}
+def make_conversation(phone_number):
+    url = "https://%s/v1/conversations" % TEXTEMALL_BASE_DOMAIN
+    payload={'TextPhoneNumber': '18669481703', 'PhoneNumber': phone_number}
     response = sess.post(url, json=payload)
-    return response.json()
+    print(response.json())
+    return response.json().get('ConversationID')
+
+def send_message(conversation_id, msg):
+    url = "https://%s/v1/conversations/%s/textmessages" % (TEXTEMALL_BASE_DOMAIN, conversation_id)
+    payload={'Message': msg}
+    response = sess.post(url, json=payload)
+    print(response.json())

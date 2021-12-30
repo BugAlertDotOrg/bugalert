@@ -13,11 +13,16 @@
     </div>
 </div>
 <div id="manage-subscriptions" style="display: none;">
-    <p>Only vulnerabilities that Bug Alert has rated as 'very high severity' or 'critical severity' will trigger a phone call,
-    and notices of 'high severity' issues <em>will not</em>.<br>
-    More information about the rating system can be found <a href="https://github.com/sullivanmatt/bugalert#assigning-severity" target="_blank">on our GitHub documentation</a>.</p><br>
+    <div class="ftralert ftralert-warning">
+        <i class="fa fa-info" style="font-size:24px;"></i>
+        <p>Only vulnerabilities that Bug Alert has rated as 'very high severity' or 'critical severity' will trigger a phone call,
+        and notices of 'high severity' issues <em>will not</em>.<br>
+        More information about the rating system can be found <a href="https://github.com/sullivanmatt/bugalert#assigning-severity" target="_blank">on our GitHub documentation</a>.</p>
+    </div>
+    <h4>Your Contact Information</h4>
+    <div id="email" style="font-size: 1.1em;">&nbsp;</div><br>
     <!-- Dropdown --> 
-    <select required id='select-country' style='width: 400px;'>
+    <select required id="select-country" style="width: 400px;">
     <option value='0' disabled selected value>Select Country Code (Phone Number Prefix)</option>
     <option value='376'>Andorra (+376)</option>
     <option value='971'>United Arab Emirates (+971)</option>

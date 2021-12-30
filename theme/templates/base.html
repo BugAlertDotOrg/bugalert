@@ -19,7 +19,7 @@
 
   <meta name="twitter:card" content="summary" />
   <meta name="twitter:site" content="BugAlert.org" />
-  <meta name="twitter:image" content="/images/bug.png" />
+  <meta name="twitter:image" content="{{ SITEURL }}/images/bug.png" />
   {% if page %}
     <meta name="twitter:title" content="Bug Alert: {{ page.title }}" />
   {% elif article %}
@@ -38,6 +38,199 @@
   {% else %}
     <link rel="stylesheet" type="text/css" href="/{{ THEME_STATIC_DIR }}/stylesheet/style.min.css">
   {% endif %}
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js" integrity="sha512-2ImtlRlf2VVmiGZsjm9bEyhjGW4dU7B6TNwh/hx/iSByxNENtj3WVE6o/9Lj4TJeVXPi4bnOIMXFIJJAeufa0A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" integrity="sha512-nMNlpuaDPrqlEls3IX/Q56H36qvBASwb3ipuo3MxeWbsQB1881ox0cRv7UPTgBlriqoynt35KjEwgGUeUXIPnw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+  <script>
+      let SUBSCRIPTIONSURL = "{{ SUBSCRIPTIONSURL }}";
+      let components = ["frameworks_libs_components", "operating_systems", "services_system_applications", "end_user_applications", "test"];
+      var subscription_email = null;
+      var subscription_signature = null;
+
+      location.queryString = {};
+      location.search.substr(1).split("&").forEach(function (pair) {
+          if (pair === "") return;
+          var parts = pair.split("=");
+          location.queryString[parts[0]] = parts[1] &&
+              decodeURIComponent(parts[1].replace(/\+/g, " "));
+      });
+
+      // Numeric only control handler
+      jQuery.fn.ForceNumericOnly =
+      function()
+      {
+          return this.each(function()
+          {
+              $(this).keydown(function(e)
+              {
+                  var key = e.charCode || e.keyCode || 0;
+                  // allow backspace, tab, delete, enter, arrows, numbers and keypad numbers ONLY
+                  // home, end, period, and numpad decimal
+                  return (
+                      key == 8 || 
+                      key == 9 ||
+                      key == 13 ||
+                      key == 46 ||
+                      key == 110 ||
+                      key == 190 ||
+                      (key >= 35 && key <= 40) ||
+                      (key >= 48 && key <= 57) ||
+                      (key >= 96 && key <= 105));
+              });
+          });
+      };
+
+      $(document).ready(function() {
+          // Initialize select2
+          $("#select-country").select2();
+          $("#phone-number").ForceNumericOnly();
+
+          for (let i = 0; i < components.length; i++){
+              component = components[i];
+              //if ($('#' + component + '_email').is(":checked")) {
+              //    data[component] = data[component] + "e";
+              //}
+              $('#' + component + '_phone').on('change', {item: component + '_email'}, function(event) {
+                  if(this.checked) {
+                      $('#' + event.data.item).prop( "checked", true );
+                  }
+              });
+              $('#' + component + '_sms').on('change', {item: component + '_email'}, function(event) {
+                  if(this.checked) {
+                      $('#' + event.data.item).prop( "checked", true );
+                  }
+              });
+          }
+      });
+
+      $(window).on('load', function() {
+          if (location.queryString && location.queryString.email && location.queryString.signature) {
+              subscription_email = location.queryString.email;
+              subscription_signature = location.queryString.signature;
+              $('#verify-submit').html("Gathering information...");
+
+              $.ajax({
+                 type: "POST",
+                 url: SUBSCRIPTIONSURL + "/return",
+                 data: JSON.stringify({ "email": subscription_email, "signature": subscription_signature }),
+                 contentType: "application/json; charset=utf-8",
+                 crossDomain: true,
+                 dataType: "json",
+                 success: function (data, status, jqXHR) {
+                     load_subscription_selections(data);
+                 },
+
+                 error: function (jqXHR, status) {
+                     // error handler
+                     if(jqXHR.status === 404) {
+                         console.log("No existing subscriptions found for this email.");
+                         load_subscription_selections(null);
+                     }
+                     else {
+                         $('#verify-submit').html("<p><strong>Uh oh!</strong><br>There is something wrong with your magic link (an error was returned from our API). If you continue to have issues, let us know by opening an issue on GitHub.</p><br><br>");
+                     }
+                 }
+              });
+          }
+      });
+
+      function submit_subscription_verify() {
+          $.ajax({
+              type: "POST",
+              url: SUBSCRIPTIONSURL + "/verify",
+              data: JSON.stringify({ "email": $('#email').val() }),
+              contentType: "application/json; charset=utf-8",
+              crossDomain: true,
+              dataType: "json",
+              success: function (data, status, jqXHR) {
+                  $('#verify-submit').html("<p><em>Success! Close this tab and check your email.</em></p><br><br>")
+              },
+
+              error: function (jqXHR, status) {
+                  // error handler
+                  console.log(jqXHR);
+                  $('#verify-submit').html("<p><strong>Uh oh!</strong><br>Your email address was not accepted. Ensure the domain exists and is typed correctly. If you continue to have issues, let us know by opening an issue on GitHub.</p><br><br>")
+              }
+          });
+      }
+
+      function submit_subscription_preferences() {
+          var data = {
+            "email": subscription_email,
+            "signature": subscription_signature,
+            "phone_country_code": $('#select-country').val(),
+            "phone_number": $('#phone-number').val()
+          }
+
+          for (let i = 0; i < components.length; i++){
+              component = components[i];
+              data[component] = "";
+
+              if ($('#' + component + '_email').is(":checked")) {
+                  data[component] = data[component] + "e";
+              }
+              if ($('#' + component + '_phone').is(":checked")) {
+                  data[component] = data[component] + "p";
+              }
+              if ($('#' + component + '_sms').is(":checked")) {
+                  data[component] = data[component] + "s";
+              }
+
+              if (data[component] === "") {
+                  data[component] = null;
+              }
+          }
+
+          $.ajax({
+              type: "POST",
+              url: SUBSCRIPTIONSURL + "/update",
+              data: JSON.stringify(data),
+              contentType: "application/json; charset=utf-8",
+              crossDomain: true,
+              dataType: "json",
+              success: function (data, status, jqXHR) {
+                  $('#manage-subscriptions').html("<p><em>Success! Your subscriptions have been updated.</em></p><br><br>")
+              },
+
+              error: function (jqXHR, status) {
+                  // error handler
+                  console.log(jqXHR);
+                  $('#manage-subscriptions').html("<p><strong>Uh oh!</strong><br>Your subscription updates were not saved due to an unexpected error. If you continue to have issues, let us know by opening an issue on GitHub.</p><br><br>")
+              }
+         });
+      }
+
+      function load_subscription_selections(data) {
+          console.log(data)
+          $('#verify-submit').hide();
+          $('#manage-subscriptions').show();
+
+          // If no data, we have nothing to pre-fill/pre-check.
+          if (data === null) {
+              return;
+          }
+
+          if (data.phone_country_code && data.phone_number) {
+              $('#select-country').val(data.phone_country_code).change();
+              $('#phone-number').val(data.phone_number);
+          }
+
+          for (let i = 0; i < components.length; i++){
+              component = components[i];
+              if (data[component] && data[component].includes('e')) { 
+                  $('#' + component + '_email').prop( "checked", true );
+              }
+              if (data[component] && data[component].includes('p')) {
+                  $('#' + component + '_phone').prop( "checked", true );
+              }
+              if (data[component] && data[component].includes('s')) {
+                  $('#' + component + '_sms').prop( "checked", true );
+              }
+          }
+      }
+  </script>
 
   {# DARK THEME STYLES #}
   {% if THEME_COLOR == "dark" or THEME_COLOR_AUTO_DETECT_BROWSER_PREFERENCE or THEME_COLOR_ENABLE_USER_OVERRIDE %}

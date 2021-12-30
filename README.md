@@ -95,6 +95,8 @@ security and IT communities need to know immediately about an issue.
 For example, while DoS vulnerabilities are generally out of scope, an attack that could
 crash-loop an nginx server in one packet would still be worthy of a notice.
 
+Issues generally outside the scope of this project include:
+
 * Software not in widespread use
 * Denial of service
 * Protocol attacks (e.g. TLS cipher downgrade)
@@ -127,11 +129,13 @@ _Examples: Django, Flask, Rails, Angular, Spring Boot._
 #### Operating Systems
 For operating systems, in desktop, server, and mobile flavors.
 
-_Examples: Windows, macOS, iOS, Android._
+_Examples: Windows SMB, Linux Kernel, iMessage, Apple Darwin._
 
-#### System Applications
-For core components and language runtimes. These can be components primarily indended for
-end-users, but that are rarely installed by the 'average' user of a system.
+#### Services & System Applications
+For services not written by the operating system vendor, core components,
+and language runtimes. This category can also include components primarily
+indended for end-users, but that are rarely installed by the average
+non-administrative user of a system.
 
 _Examples: openssh, Apache HTTP Server, nodejs, nginx, Java Runtime, vim, curl, Python._
 
@@ -144,3 +148,10 @@ Audacity, VLC, Steam, Microsoft Office._
 
 ## Contributing
 Pull requests are welcome and encouraged.
+
+### Run Locally
+In a Python 3.6+ environment, install all project requirements:
+`pip install -Ur requirements.txt`
+
+After that, you can run a local instance with:
+`pelican --autoreload --listen -s pelicanconf.py`

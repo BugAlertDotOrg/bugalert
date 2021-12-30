@@ -2,7 +2,6 @@ import logging
 import tempfile
 import os
 import re
-import requests
 import sys
 import tweepy
 
@@ -12,16 +11,10 @@ from requests_oauthlib import OAuth1Session
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
+os.environ['PATH'] = "%s:%s" % (os.environ['PATH'], SCRIPT_PATH)
 
 TEXTEMALL_BASE_DOMAIN = "staging-rest.call-em-all.com"
 SCRIPT_PATH = os.path.dirname(os.path.realpath(__file__))
-
-sess = OAuth1Session(os.getenv('TEXT_EM_ALL_ID'),
-                      client_secret=os.getenv('TEXT_EM_ALL_SECRET'),
-                      resource_owner_key=os.getenv('TEXT_EM_ALL_TOKEN'))
-
-os.environ['PATH'] = "%s:%s" % (os.environ['PATH'], SCRIPT_PATH)
-from pydub import AudioSegment
 
 def main():
     with open('/tmp/gcp.key', 'w') as f:
@@ -36,6 +29,18 @@ def main():
         url = "https://bugalert.org/%s" % filename.replace('md', 'html')
         tweet = "%s %s #BugAlertNotice" % (("%s..." % summary[:220] if len(summary) > 220 else summary), url)
         twitter.create_tweet(text=tweet)
+
+    if os.getenv('TEXT_EM_ALL_ID'):
+        send_telephony(summary, filename)
+
+def send_telephony(summary, filename)
+    # Dynamic import to avoid loading up ffmpeg early
+    # or unnecessarily.
+    from pydub import AudioSegment
+
+    sess = OAuth1Session(os.getenv('TEXT_EM_ALL_ID'),
+                         client_secret=os.getenv('TEXT_EM_ALL_SECRET'),
+                         resource_owner_key=os.getenv('TEXT_EM_ALL_TOKEN'))
 
     audio = generate_tts(summary)
 
@@ -53,12 +58,11 @@ def main():
     print(final_filename)
 
     if os.getenv('TEXT_EM_ALL_ID'):
-        audio_id = upload_audio(final_filename)
+        audio_id = upload_audio(final_filename, sess)
         print(audio_id)
 
-        broadcast = create_broadcast(audio_id, final_filename)
+        broadcast = create_broadcast(audio_id, final_filename, sess)
         print(broadcast)
-
 
 def generate_tts(summary):
     # Instantiates a client
@@ -98,7 +102,7 @@ def get_summary(filename):
 
     return summary
 
-def upload_audio(filename):
+def upload_audio(filename, sess):
     url = "https://%s/v1/audio/%s" % (TEXTEMALL_BASE_DOMAIN, filename)
     payload={}
     files=[
@@ -112,7 +116,7 @@ def upload_audio(filename):
     response = sess.post(url, headers=headers, data=payload, files=files)
     return response.json()['AudioID']
 
-def create_broadcast(audioid, filename):
+def create_broadcast(audioid, filename, sess):
     url = "https://%s/v1/broadcasts" % TEXTEMALL_BASE_DOMAIN
     payload={'BroadcastName': filename, 'BroadcastType': 'Announcement', 'StartDate': '', 'CallerID': '5076688567', 'Audio': {'AudioID': audioid}, 'Lists': [{'ListID': '2'}]}
     response = sess.post(url, json=payload)

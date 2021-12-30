@@ -2,6 +2,7 @@ from datetime import datetime
 
 AUTHOR = "Bug Alert Contributors"
 SITEURL = "https://bugalert.org"
+SUBSCRIPTIONSURL = "https://subscriptions.bugalert.org"
 SITENAME = "Bug Alert"
 SITETITLE = "Bug Alert"
 SITESUBTITLE = "A service for alerting security and IT professionals of high-impact and 0day vulnerabilities."
@@ -87,7 +88,7 @@ SOCIAL = (
 
 MENUITEMS = (
     ("About", "/content/pages/about.html", ""),
-    ("Manage Notice Subscriptions", "/content/pages/subscriptions.html", ""),
+    ("My Subscriptions", "/content/pages/my-subscriptions.html", ""),
     ("Categories", "/categories.html", "nomobile"),
     ("Tags", "/tags.html", "nomobile"),
 )

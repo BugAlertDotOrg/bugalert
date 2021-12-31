@@ -29,7 +29,7 @@ sess = OAuth1Session(os.getenv('TEXT_EM_ALL_ID'),
 def respond_error(err, origin, status=400):
     return {
         'statusCode': status,
-        'body': "{\"error\": \"%s\"}" % err,
+        'body': f"{{\"error\": \"{err}\"}}",
         'headers': {
             'Content-Type': 'application/json',
             'Access-Control-Allow-Origin': origin,
@@ -55,7 +55,14 @@ def respond_success(msg, origin):
 def lambda_handler(event, context):
     headers = event.get('headers')
     headers = {k.lower():v for k,v in headers.items()}
-    logger.info("%s %s %s %s %s %s" % (headers.get('x-forwarded-for', 'no-ip'), event.get('httpMethod', 'no-method'), event.get('path', 'no-path'), headers.get('user-agent', 'no-ua'), headers.get('referer', 'no-referer'), headers.get('origin', 'no-origin')))
+    logger.info(
+        f"{headers.get('x-forwarded-for', 'no-ip')} "
+        f"{event.get('httpMethod', 'no-method')} "
+        f"{event.get('path', 'no-path')} "
+        f"{headers.get('user-agent', 'no-ua')} "
+        f"{headers.get('referer', 'no-referer')} "
+        f"{headers.get('origin', 'no-origin')}"
+    )
     method = event.get('httpMethod')
     origin = headers.get('origin')
     table = dynamo.Table('bugalert-subscriptions-prod')
@@ -203,7 +210,7 @@ def lambda_handler(event, context):
 
         return respond_success("{\"status\": \"success\"}", origin)
 
-    return respond_error("Unsupported method %s" % method, origin, status=405)
+    return respond_error(f"Unsupported method {method}", origin, status=405)
 
     #print(vars(event))
     #print(vars(context))
@@ -217,14 +224,14 @@ def send_phone_confirmation(phone_number):
     send_message(conversation_id, "Bug Alert: you are opted in to phone-based notices. Please note that due to limitations with our telephony provider, calls will come from a different phone number, which you should save as a contact: +1 (507) 668-8567. Visit https://bugalert.org to manage notice subscriptions.")
 
 def make_conversation(phone_number):
-    url = "https://%s/v1/conversations" % TEXTEMALL_BASE_DOMAIN
+    url = f"https://{TEXTEMALL_BASE_DOMAIN}/v1/conversations"
     payload={'TextPhoneNumber': '18669481703', 'PhoneNumber': phone_number}
     response = sess.post(url, json=payload)
     print(response.json())
     return response.json().get('ConversationID')
 
 def send_message(conversation_id, msg):
-    url = "https://%s/v1/conversations/%s/textmessages" % (TEXTEMALL_BASE_DOMAIN, conversation_id)
+    url = f"https://{TEXTEMALL_BASE_DOMAIN}/v1/conversations/{conversation_id}/textmessages"
     payload={'Message': msg}
     response = sess.post(url, json=payload)
     print(response.json())

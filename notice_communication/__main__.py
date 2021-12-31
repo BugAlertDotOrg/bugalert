@@ -11,7 +11,7 @@ from requests_oauthlib import OAuth1Session
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
-os.environ['PATH'] = "%s:%s" % (os.environ['PATH'], SCRIPT_PATH)
+os.environ['PATH'] = f"{os.environ['PATH']}:{SCRIPT_PATH}"
 
 TEXTEMALL_BASE_DOMAIN = "staging-rest.call-em-all.com"
 SCRIPT_PATH = os.path.dirname(os.path.realpath(__file__))
@@ -26,8 +26,8 @@ def main():
 
     if os.getenv('TWITTER_BEARER_TOKEN'):
         twitter = get_twitter_client()
-        url = "https://bugalert.org/%s" % filename.replace('md', 'html')
-        tweet = "%s %s #BugAlertNotice" % (("%s..." % summary[:220] if len(summary) > 220 else summary), url)
+        url = f"https://bugalert.org/{filename.replace('md', 'html')}"
+        tweet = f"{(f'{summary[:220] if len(summary) > 220 else summary)}...'} {url} #BugAlertNotice"
         twitter.create_tweet(text=tweet)
 
     if os.getenv('TEXT_EM_ALL_ID'):
@@ -67,7 +67,7 @@ def send_telephony(summary, filename)
 def generate_tts(summary):
     # Instantiates a client
     client = texttospeech.TextToSpeechClient()
-    synthesis_input = texttospeech.SynthesisInput(text="%s The notice will be played once more. %s" % (summary, summary))
+    synthesis_input = texttospeech.SynthesisInput(text=f"{summary} The notice will be played once more. {summary}")
 
     # Build the voice request, select the language code ("en-US")
     voice = texttospeech.VoiceSelectionParams(
@@ -103,7 +103,7 @@ def get_summary(filename):
     return summary
 
 def upload_audio(filename, sess):
-    url = "https://%s/v1/audio/%s" % (TEXTEMALL_BASE_DOMAIN, filename)
+    url = f"https://{TEXTEMALL_BASE_DOMAIN}/v1/audio/{filename}"
     payload={}
     files=[
       ('File',(filename,open(filename,'rb'),'audio/mpeg'))
@@ -117,7 +117,7 @@ def upload_audio(filename, sess):
     return response.json()['AudioID']
 
 def create_broadcast(audioid, filename, sess):
-    url = "https://%s/v1/broadcasts" % TEXTEMALL_BASE_DOMAIN
+    url = f"https://{TEXTEMALL_BASE_DOMAIN}/v1/broadcasts"
     payload={'BroadcastName': filename, 'BroadcastType': 'Announcement', 'StartDate': '', 'CallerID': '5076688567', 'Audio': {'AudioID': audioid}, 'Lists': [{'ListID': '2'}]}
     response = sess.post(url, json=payload)
     return response.json()

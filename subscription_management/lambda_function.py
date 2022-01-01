@@ -108,14 +108,14 @@ def lambda_handler(event, context):
         # A future improvement could be made to authenticate this, but for the moment,
         # I don't forsee anyone DoS-ing this endpoint causing any harm.
         sms_file_id, phone_file_id = upload_telephony_contact_list(body.get('category'))
-        return respond_success("{\"status\": \"success\", \"sms_file_id\": \"%s\", \"phone_file_id\": \"%s\"}" % (sms_file_id, phone_file_id), origin)
+        return respond_success(f"{{\"status\": \"success\", \"sms_file_id\": \"{sms_file_id}\", \"phone_file_id\": \"{phone_file_id}\"}}", origin)
     elif method == 'POST' and path == 'verify':
         # Fire off email to confirm the user is allowed to make subscription changes.
         locally_computed_hmac = hmac.new(hmacsecret, codecs.encode(email), hashlib.sha256).digest()
         signature = base64.urlsafe_b64encode(locally_computed_hmac).decode('utf8').rstrip("=")
-        msg_body = "Please visit the following URL to verify your email address: " \
-                   "https://bugalert.org/content/pages/my-subscriptions.html" \
-                   "?signature={}&email={}".format(signature, email)
+        msg_body = f"Please visit the following URL to verify your email address: "
+                   f"https://bugalert.org/content/pages/my-subscriptions.html"
+                   f"?signature={signature}&email={email}"
         ses.send_email(
             Destination={
                 'ToAddresses': [
@@ -262,9 +262,9 @@ def upload_telephony_contact_list(category):
     for i in data:
         contact = ast.literal_eval((json.dumps(i)))
         if 's' in contact[category] and contact.get('phone_country_code') and contact.get('phone_number') and contact.get('phone_country_code') == 1:
-            sms_file.write("Bugs,Allert,bugs.allert@example.com,1%s\n" % contact.get('phone_number'))
+            sms_file.write(f"Bugs,Allert,bugs.allert@example.com,1{contact.get('phone_number')}\n")
         if 'p' in contact[category] and contact.get('phone_country_code') and contact.get('phone_number') and contact.get('phone_country_code') == 1:
-            phone_file.write("Bugs,Allert,bugs.allert@example.com,1%s\n" % contact.get('phone_number'))
+            phone_file.write(f"Bugs,Allert,bugs.allert@example.com,1{contact.get('phone_number')}\n")
 
     sms_file.close()
     phone_file.close()
@@ -272,8 +272,8 @@ def upload_telephony_contact_list(category):
     # Now put them on telephony services
     sms_file_id = upload_contacts('/tmp/sms.csv')
     phone_file_id = upload_contacts('/tmp/phone.csv')
-    print("sms_file_id: %s" % sms_file_id)
-    print("phone_file_id: %s" % sms_file_id)
+    print(f"sms_file_id: {sms_file_id}")
+    print(f"phone_file_id: {phone_file_id}")
     return sms_file_id, phone_file_id
     
 
@@ -281,8 +281,8 @@ def upload_contacts(filepath):
     with open(filepath, 'r') as f:
         payload = f.read()
 
-    print("Sending payload: %s" % payload)
-    url = "https://%s/v1/fileuploads" % TEXTEMALL_BASE_DOMAIN
+    print(f"Sending payload: {payload}"
+    url = f"https://{TEXTEMALL_BASE_DOMAIN}/v1/fileuploads"
     headers = {
           'Accept': 'application/json',
           'Content-Type': 'text/csv',

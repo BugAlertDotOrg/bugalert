@@ -107,9 +107,8 @@ def generate_tts(summary):
 
 
 def get_summary_and_category(filename):
-    f = open(filename, 'r')
-    notice = f.read()
-    f.close()
+    with open(filename, 'r') as f:
+        notice = f.read()
 
     pattern = "Summary: (.*)"
     groups = re.search(pattern, notice)

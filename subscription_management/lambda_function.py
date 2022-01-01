@@ -1,3 +1,4 @@
+import ast
 import logging
 import os
 import sys
@@ -9,13 +10,15 @@ import boto3
 
 import simplejson as json
 from requests_oauthlib import OAuth1Session
-from boto3.dynamodb.conditions import Key
+from boto3.dynamodb.conditions import Key, Attr
 from email_validator import validate_email, EmailNotValidError
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 dynamo = boto3.resource('dynamodb')
+table = dynamo.Table('bugalert-subscriptions-prod')
+
 ses = boto3.client('ses', region_name="us-east-1")
 hmacsecret = os.getenv('HMACSECRET')
 hmacsecret = codecs.encode(hmacsecret)
@@ -27,7 +30,7 @@ sess = OAuth1Session(os.getenv('TEXT_EM_ALL_ID'),
 
 
 def respond_error(err, origin, status=400):
-    return {
+    response = {
         'statusCode': status,
         'body': f"{{\"error\": \"{err}\"}}",
         'headers': {
@@ -38,9 +41,11 @@ def respond_error(err, origin, status=400):
             'Access-Control-Allow-Methods': 'GET, POST, OPTIONS, HEAD'
         },
     }
+    print(response)
+    return response
 
 def respond_success(msg, origin):
-    return {
+    response = {
         'statusCode': '200',
         'body': msg,
         'headers': {
@@ -51,6 +56,8 @@ def respond_success(msg, origin):
             'Access-Control-Allow-Methods': 'GET, POST, OPTIONS, HEAD'
         },
     }
+    print(response)
+    return response
 
 def lambda_handler(event, context):
     headers = event.get('headers')
@@ -65,7 +72,6 @@ def lambda_handler(event, context):
     )
     method = event.get('httpMethod')
     origin = headers.get('origin')
-    table = dynamo.Table('bugalert-subscriptions-prod')
 
     path = event.get('path')[1:]
     if not path or len(path) != 6 or not path.isalpha():
@@ -97,8 +103,14 @@ def lambda_handler(event, context):
       # email is not valid, exception message is human-readable
       return respond_error("Email field is not valid: '{}'".format(str(e)), origin)
 
-    if method == 'POST' and path == 'verify':
-        # Fire off email
+    if method == 'POST' and path == 'listup':
+        # RPC to dump the contact list from dynamo into telephony provider.
+        # A future improvement could be made to authenticate this, but for the moment,
+        # I don't forsee anyone DoS-ing this endpoint causing any harm.
+        sms_file_id, phone_file_id = upload_telephony_contact_list(body.get('category'))
+        return respond_success("{\"status\": \"success\", \"sms_file_id\": \"%s\", \"phone_file_id\": \"%s\"}" % (sms_file_id, phone_file_id), origin)
+    elif method == 'POST' and path == 'verify':
+        # Fire off email to confirm the user is allowed to make subscription changes.
         locally_computed_hmac = hmac.new(hmacsecret, codecs.encode(email), hashlib.sha256).digest()
         signature = base64.urlsafe_b64encode(locally_computed_hmac).decode('utf8').rstrip("=")
         msg_body = "Please visit the following URL to verify your email address: " \
@@ -174,7 +186,7 @@ def lambda_handler(event, context):
             phone_number = int(phone_number)
             phone_country_code = int(phone_country_code)
 
-        response = table.update_item(
+        table.update_item(
             Key={
                 'email': email
             },
@@ -212,9 +224,6 @@ def lambda_handler(event, context):
 
     return respond_error(f"Unsupported method {method}", origin, status=405)
 
-    #print(vars(event))
-    #print(vars(context))
-
 def send_sms_confirmation(phone_number):
     conversation_id = make_conversation(phone_number)
     send_message(conversation_id, "Bug Alert: you are opted in to SMS-based notices. Visit https://bugalert.org to manage notice subscriptions.")
@@ -235,3 +244,49 @@ def send_message(conversation_id, msg):
     payload={'Message': msg}
     response = sess.post(url, json=payload)
     print(response.json())
+
+def upload_telephony_contact_list(category):
+    response = table.scan(FilterExpression = Attr(category).contains('s') | Attr(category).contains('p'))
+    data = response['Items']
+
+    while 'LastEvaluatedKey' in response:
+        response = table.scan(ExclusiveStartKey=response['LastEvaluatedKey'])
+        data.extend(response['Items'])
+
+    # TODO tempfile lib!
+    sms_file = open('/tmp/sms.csv', 'w')
+    sms_file.write("First Name,Last Name,Notes,Phone Number")
+    phone_file = open('/tmp/phone.csv', 'w')
+    phone_file.write("First Name,Last Name,Notes,Phone Number")
+    # https://newbedev.com/using-boto3-in-python-to-acquire-results-from-dynamodb-and-parse-into-a-usable-variable-or-dictionary
+    for i in data:
+        contact = ast.literal_eval((json.dumps(i)))
+        if 's' in contact[category] and contact.get('phone_country_code') and contact.get('phone_number') and contact.get('phone_country_code') == 1:
+            sms_file.write("Bugs,Allert,bugs.allert@example.com,1%s\n" % contact.get('phone_number'))
+        if 'p' in contact[category] and contact.get('phone_country_code') and contact.get('phone_number') and contact.get('phone_country_code') == 1:
+            phone_file.write("Bugs,Allert,bugs.allert@example.com,1%s\n" % contact.get('phone_number'))
+
+    sms_file.close()
+    phone_file.close()
+
+    # Now put them on telephony services
+    sms_file_id = upload_contacts('/tmp/sms.csv')
+    phone_file_id = upload_contacts('/tmp/phone.csv')
+    print("sms_file_id: %s" % sms_file_id)
+    print("phone_file_id: %s" % sms_file_id)
+    return sms_file_id, phone_file_id
+    
+
+def upload_contacts(filepath):
+    with open(filepath, 'r') as f:
+        payload = f.read()
+
+    print("Sending payload: %s" % payload)
+    url = "https://%s/v1/fileuploads" % TEXTEMALL_BASE_DOMAIN
+    headers = {
+          'Accept': 'application/json',
+          'Content-Type': 'text/csv',
+    }
+    response = sess.post(url, headers=headers, data=payload)
+    print (response.json())
+    return response.json().get('FileID')

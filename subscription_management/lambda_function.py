@@ -254,27 +254,23 @@ def upload_telephony_contact_list(category):
         data.extend(response['Items'])
 
     # TODO tempfile lib!
-    sms_file = open('/tmp/sms.csv', 'w')
-    sms_file.write("First Name,Last Name,Notes,Phone Number")
-    phone_file = open('/tmp/phone.csv', 'w')
-    phone_file.write("First Name,Last Name,Notes,Phone Number")
-    # https://newbedev.com/using-boto3-in-python-to-acquire-results-from-dynamodb-and-parse-into-a-usable-variable-or-dictionary
-    for i in data:
-        contact = ast.literal_eval((json.dumps(i)))
-        if 's' in contact[category] and contact.get('phone_country_code') and contact.get('phone_number') and contact.get('phone_country_code') == 1:
-            sms_file.write(f"Bugs,Allert,bugs.allert@example.com,1{contact.get('phone_number')}\n")
-        if 'p' in contact[category] and contact.get('phone_country_code') and contact.get('phone_number') and contact.get('phone_country_code') == 1:
-            phone_file.write(f"Bugs,Allert,bugs.allert@example.com,1{contact.get('phone_number')}\n")
+    with open('/tmp/sms.csv', 'w') as sms_file, open('/tmp/phone.csv', 'w') as phone_file:
+        sms_file.write("First Name,Last Name,Notes,Phone Number")
+        phone_file.write("First Name,Last Name,Notes,Phone Number")
+        # https://newbedev.com/using-boto3-in-python-to-acquire-results-from-dynamodb-and-parse-into-a-usable-variable-or-dictionary
+        for i in data:
+            contact = ast.literal_eval((json.dumps(i)))
+            if 's' in contact[category] and contact.get('phone_country_code') and contact.get('phone_number') and contact.get('phone_country_code') == 1:
+                sms_file.write(f"Bugs,Allert,bugs.allert@example.com,1{contact.get('phone_number')}\n")
+            if 'p' in contact[category] and contact.get('phone_country_code') and contact.get('phone_number') and contact.get('phone_country_code') == 1:
+                phone_file.write(f"Bugs,Allert,bugs.allert@example.com,1{contact.get('phone_number')}\n")
 
-    sms_file.close()
-    phone_file.close()
-
-    # Now put them on telephony services
-    sms_file_id = upload_contacts('/tmp/sms.csv')
-    phone_file_id = upload_contacts('/tmp/phone.csv')
-    print(f"sms_file_id: {sms_file_id}")
-    print(f"phone_file_id: {phone_file_id}")
-    return sms_file_id, phone_file_id
+        # Now put them on telephony services
+        sms_file_id = upload_contacts('/tmp/sms.csv')
+        phone_file_id = upload_contacts('/tmp/phone.csv')
+        print(f"sms_file_id: {sms_file_id}")
+        print(f"phone_file_id: {phone_file_id}")
+        return sms_file_id, phone_file_id
     
 
 def upload_contacts(filepath):

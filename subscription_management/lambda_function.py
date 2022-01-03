@@ -113,8 +113,8 @@ def lambda_handler(event, context):
         # Fire off email to confirm the user is allowed to make subscription changes.
         locally_computed_hmac = hmac.new(hmacsecret, codecs.encode(email), hashlib.sha256).digest()
         signature = base64.urlsafe_b64encode(locally_computed_hmac).decode('utf8').rstrip("=")
-        msg_body = f"Please visit the following URL to verify your email address: "
-                   f"https://bugalert.org/content/pages/my-subscriptions.html"
+        msg_body = f"Please visit the following URL to verify your email address: " \
+                   f"https://bugalert.org/content/pages/my-subscriptions.html" \
                    f"?signature={signature}&email={email}"
         ses.send_email(
             Destination={

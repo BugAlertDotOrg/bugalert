@@ -32,7 +32,7 @@ sess = OAuth1Session(os.getenv('TEXT_EM_ALL_ID'),
 def respond_error(err, origin, status=400):
     response = {
         'statusCode': status,
-        'body': "{\"error\": \"%s\"}" % err,
+        'body': f"{{\"error\": \"{err}\"}}",
         'headers': {
             'Content-Type': 'application/json',
             'Access-Control-Allow-Origin': origin,
@@ -62,7 +62,14 @@ def respond_success(msg, origin):
 def lambda_handler(event, context):
     headers = event.get('headers')
     headers = {k.lower():v for k,v in headers.items()}
-    logger.info("%s %s %s %s %s %s" % (headers.get('x-forwarded-for', 'no-ip'), event.get('httpMethod', 'no-method'), event.get('path', 'no-path'), headers.get('user-agent', 'no-ua'), headers.get('referer', 'no-referer'), headers.get('origin', 'no-origin')))
+    logger.info(
+        f"{headers.get('x-forwarded-for', 'no-ip')} "
+        f"{event.get('httpMethod', 'no-method')} "
+        f"{event.get('path', 'no-path')} "
+        f"{headers.get('user-agent', 'no-ua')} "
+        f"{headers.get('referer', 'no-referer')} "
+        f"{headers.get('origin', 'no-origin')}"
+    )
     method = event.get('httpMethod')
     origin = headers.get('origin')
 
@@ -101,14 +108,15 @@ def lambda_handler(event, context):
         # A future improvement could be made to authenticate this, but for the moment,
         # I don't forsee anyone DoS-ing this endpoint causing any harm.
         sms_file_id, phone_file_id = upload_telephony_contact_list(body.get('category'))
-        return respond_success("{\"status\": \"success\", \"sms_file_id\": \"%s\", \"phone_file_id\": \"%s\"}" % (sms_file_id, phone_file_id), origin)
+        json_content = f"{{\"status\": \"success\", \"sms_file_id\": \"{sms_file_id}\", \"phone_file_id\": \"{phone_file_id}\"}}"
+        return respond_success(json_content, origin)
     elif method == 'POST' and path == 'verify':
         # Fire off email to confirm the user is allowed to make subscription changes.
         locally_computed_hmac = hmac.new(hmacsecret, codecs.encode(email), hashlib.sha256).digest()
         signature = base64.urlsafe_b64encode(locally_computed_hmac).decode('utf8').rstrip("=")
-        msg_body = "Please visit the following URL to verify your email address: " \
-                   "https://bugalert.org/content/pages/my-subscriptions.html" \
-                   "?signature={}&email={}".format(signature, email)
+        msg_body = f"Please visit the following URL to verify your email address: " \
+                   f"https://bugalert.org/content/pages/my-subscriptions.html" \
+                   f"?signature={signature}&email={email}"
         ses.send_email(
             Destination={
                 'ToAddresses': [
@@ -215,7 +223,7 @@ def lambda_handler(event, context):
 
         return respond_success("{\"status\": \"success\"}", origin)
 
-    return respond_error("Unsupported method %s" % method, origin, status=405)
+    return respond_error(f"Unsupported method {method}", origin, status=405)
 
 def send_sms_confirmation(phone_number):
     conversation_id = make_conversation(phone_number)
@@ -226,14 +234,14 @@ def send_phone_confirmation(phone_number):
     send_message(conversation_id, "Bug Alert: you are opted in to phone-based notices. Please note that due to limitations with our telephony provider, calls will come from a different phone number, which you should save as a contact: +1 (507) 668-8567. Visit https://bugalert.org to manage notice subscriptions.")
 
 def make_conversation(phone_number):
-    url = "https://%s/v1/conversations" % TEXTEMALL_BASE_DOMAIN
+    url = f"https://{TEXTEMALL_BASE_DOMAIN}/v1/conversations"
     payload={'TextPhoneNumber': '18669481703', 'PhoneNumber': phone_number}
     response = sess.post(url, json=payload)
     print(response.json())
     return response.json().get('ConversationID')
 
 def send_message(conversation_id, msg):
-    url = "https://%s/v1/conversations/%s/textmessages" % (TEXTEMALL_BASE_DOMAIN, conversation_id)
+    url = f"https://{TEXTEMALL_BASE_DOMAIN}/v1/conversations/{conversation_id}/textmessages"
     payload={'Message': msg}
     response = sess.post(url, json=payload)
     print(response.json())
@@ -247,35 +255,31 @@ def upload_telephony_contact_list(category):
         data.extend(response['Items'])
 
     # TODO tempfile lib!
-    sms_file = open('/tmp/sms.csv', 'w')
-    sms_file.write("First Name,Last Name,Notes,Phone Number")
-    phone_file = open('/tmp/phone.csv', 'w')
-    phone_file.write("First Name,Last Name,Notes,Phone Number")
-    # https://newbedev.com/using-boto3-in-python-to-acquire-results-from-dynamodb-and-parse-into-a-usable-variable-or-dictionary
-    for i in data:
-        contact = ast.literal_eval((json.dumps(i)))
-        if 's' in contact[category] and contact.get('phone_country_code') and contact.get('phone_number') and contact.get('phone_country_code') == 1:
-            sms_file.write("Bugs,Allert,bugs.allert@example.com,1%s\n" % contact.get('phone_number'))
-        if 'p' in contact[category] and contact.get('phone_country_code') and contact.get('phone_number') and contact.get('phone_country_code') == 1:
-            phone_file.write("Bugs,Allert,bugs.allert@example.com,1%s\n" % contact.get('phone_number'))
+    with open('/tmp/sms.csv', 'w') as sms_file, open('/tmp/phone.csv', 'w') as phone_file:
+        sms_file.write("First Name,Last Name,Notes,Phone Number")
+        phone_file.write("First Name,Last Name,Notes,Phone Number")
+        # https://newbedev.com/using-boto3-in-python-to-acquire-results-from-dynamodb-and-parse-into-a-usable-variable-or-dictionary
+        for i in data:
+            contact = ast.literal_eval((json.dumps(i)))
+            if 's' in contact[category] and contact.get('phone_country_code') and contact.get('phone_number') and contact.get('phone_country_code') == 1:
+                sms_file.write(f"Bugs,Allert,bugs.allert@example.com,1{contact.get('phone_number')}\n")
+            if 'p' in contact[category] and contact.get('phone_country_code') and contact.get('phone_number') and contact.get('phone_country_code') == 1:
+                phone_file.write(f"Bugs,Allert,bugs.allert@example.com,1{contact.get('phone_number')}\n")
 
-    sms_file.close()
-    phone_file.close()
-
-    # Now put them on telephony services
-    sms_file_id = upload_contacts('/tmp/sms.csv')
-    phone_file_id = upload_contacts('/tmp/phone.csv')
-    print("sms_file_id: %s" % sms_file_id)
-    print("phone_file_id: %s" % sms_file_id)
-    return sms_file_id, phone_file_id
+        # Now put them on telephony services
+        sms_file_id = upload_contacts('/tmp/sms.csv')
+        phone_file_id = upload_contacts('/tmp/phone.csv')
+        print(f"sms_file_id: {sms_file_id}")
+        print(f"phone_file_id: {phone_file_id}")
+        return sms_file_id, phone_file_id
     
 
 def upload_contacts(filepath):
     with open(filepath, 'r') as f:
         payload = f.read()
 
-    print("Sending payload: %s" % payload)
-    url = "https://%s/v1/fileuploads" % TEXTEMALL_BASE_DOMAIN
+    print(f"Sending payload: {payload}"
+    url = f"https://{TEXTEMALL_BASE_DOMAIN}/v1/fileuploads"
     headers = {
           'Accept': 'application/json',
           'Content-Type': 'text/csv',

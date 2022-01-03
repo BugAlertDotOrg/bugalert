@@ -16,7 +16,7 @@ logger.setLevel(logging.INFO)
 TEXTEMALL_BASE_DOMAIN = "staging-rest.call-em-all.com"
 SUBSCRIPTIONS_API_BASE_DOMAIN = "subscriptions.bugalert.org"
 SCRIPT_PATH = os.path.dirname(os.path.realpath(__file__))
-os.environ['PATH'] = "%s:%s" % (os.environ['PATH'], SCRIPT_PATH)
+os.environ['PATH'] = f"{os.environ['PATH']}:{SCRIPT_PATH}"
 
 def main():
     with open('/tmp/gcp.key', 'w') as f:
@@ -25,11 +25,12 @@ def main():
 
     filename = sys.argv[1]
     summary, category = get_summary_and_category(filename)
-    url = "https://bugalert.org/%s" % filename.replace('md', 'html')
+    url = f"https://bugalert.org/{filename.replace('md', 'html')}"
 
     if os.getenv('TWITTER_BEARER_TOKEN'):
         twitter = get_twitter_client()
-        tweet = "%s %s #BugAlertNotice" % (("%s..." % summary[:220] if len(summary) > 220 else summary), url)
+        tweet_summary = summary[:220] if len(summary) > 220 else summary
+        tweet = f"{f'{tweet_summary}...'} {url} #BugAlertNotice"
         twitter.create_tweet(text=tweet)
 
     if os.getenv('TEXT_EM_ALL_ID'):
@@ -62,7 +63,7 @@ def send_telephony(summary, category, url, filename):
 
     if os.getenv('TEXT_EM_ALL_ID'):
         sms_file_id, phone_file_id = update_contact_list(category)
-        msg = "BugAlert: %s %s" % (summary, url)
+        msg = f"BugAlert: {summary} {url}"
         broadcast = create_sms_broadcast(msg, os.path.basename(filename), sms_file_id, sess)
         print(broadcast)
 
@@ -74,7 +75,7 @@ def update_contact_list(category):
    headers = {"Origin": "https://bugalert.org"}
    payload = {"category": category,
               "email": "nobody@example.com"} # email field required on API validation rules
-   response = requests.post("https://%s/listup" % SUBSCRIPTIONS_API_BASE_DOMAIN, headers=headers, json=payload)
+   response = requests.post(f"https://{SUBSCRIPTIONS_API_BASE_DOMAIN}/listup", headers=headers, json=payload)
    response.raise_for_status()
    response_dict = response.json()
 
@@ -83,7 +84,7 @@ def update_contact_list(category):
 def generate_tts(summary):
     # Instantiates a client
     client = texttospeech.TextToSpeechClient()
-    synthesis_input = texttospeech.SynthesisInput(text="%s The notice will be played once more. %s" % (summary, summary))
+    synthesis_input = texttospeech.SynthesisInput(text=f"{summary} The notice will be played once more. {summary}")
 
     # Build the voice request, select the language code ("en-US")
     voice = texttospeech.VoiceSelectionParams(
@@ -107,9 +108,8 @@ def generate_tts(summary):
 
 
 def get_summary_and_category(filename):
-    f = open(filename, 'r')
-    notice = f.read()
-    f.close()
+    with open(filename, 'r') as f:
+        notice = f.read()
 
     pattern = "Summary: (.*)"
     groups = re.search(pattern, notice)
@@ -134,7 +134,7 @@ def get_summary_and_category(filename):
     return summary, category
 
 def upload_audio(filename, sess):
-    url = "https://%s/v1/audio/%s" % (TEXTEMALL_BASE_DOMAIN, filename)
+    url = f"https://{TEXTEMALL_BASE_DOMAIN}/v1/audio/{filename}"
     payload={}
     files=[
       ('File',(filename,open(filename,'rb'),'audio/mpeg'))
@@ -147,14 +147,15 @@ def upload_audio(filename, sess):
     response = sess.post(url, headers=headers, data=payload, files=files)
     return response.json()['AudioID']
 
+
 def create_phone_broadcast(audioid, filename, phone_file_id, sess):
-    url = "https://%s/v1/broadcasts" % TEXTEMALL_BASE_DOMAIN
+    url = f"https://{TEXTEMALL_BASE_DOMAIN}/v1/broadcasts"
     payload={'BroadcastName': filename, 'BroadcastType': 'Announcement', 'StartDate': '', 'CallerID': '5076688567', 'Audio': {'AudioID': audioid}, 'FileUploads': [{'FileID': phone_file_id}]}
     response = sess.post(url, json=payload)
     return response.json()
 
 def create_sms_broadcast(msg, filename, sms_file_id, sess):
-    url = "https://%s/v1/broadcasts" % TEXTEMALL_BASE_DOMAIN
+    url = f"https://{TEXTEMALL_BASE_DOMAIN}/v1/broadcasts"
     payload={'BroadcastName': filename, 'BroadcastType': 'SMS', 'StartDate': '', 'TextMessage': msg, 'FileUploads': [{'FileID': sms_file_id}]}
     response = sess.post(url, json=payload)
     return response.json()

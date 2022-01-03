@@ -108,7 +108,8 @@ def lambda_handler(event, context):
         # A future improvement could be made to authenticate this, but for the moment,
         # I don't forsee anyone DoS-ing this endpoint causing any harm.
         sms_file_id, phone_file_id = upload_telephony_contact_list(body.get('category'))
-        return respond_success(f"{{\"status\": \"success\", \"sms_file_id\": \"{sms_file_id}\", \"phone_file_id\": \"{phone_file_id}\"}}", origin)
+        json_content = f"{{\"status\": \"success\", \"sms_file_id\": \"{sms_file_id}\", \"phone_file_id\": \"{phone_file_id}\"}}"
+        return respond_success(json_content, origin)
     elif method == 'POST' and path == 'verify':
         # Fire off email to confirm the user is allowed to make subscription changes.
         locally_computed_hmac = hmac.new(hmacsecret, codecs.encode(email), hashlib.sha256).digest()

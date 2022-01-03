@@ -23,7 +23,7 @@ class ManifestGenerator(Generator):
             manifest.write(json.dumps(data, indent=4))
 
     def _create_url(self, relative_url):
-        return f'{self.settings.get('SITEURL', '')}/{relative_url}'
+        return f"{self.settings.get('SITEURL', '')}/{relative_url}"
 
     def _convert_wrapper(self, obj):
 

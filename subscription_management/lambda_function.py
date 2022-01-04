@@ -50,6 +50,8 @@ def respond_error(err, origin, status=400):
     return response
 
 def respond_success(msg, origin):
+    # give the function the flexibility to intake msg as a string or a dict
+    msg = json.dumps(msg) if isinstance(msg, dict) else msg
     response = {
         'statusCode': '200',
         'body': msg,
@@ -80,11 +82,12 @@ def lambda_handler(event, context):
 
     path = event.get('path')[1:]
     if not path or len(path) != 6 or not path.isalpha():
-        return respond_error("Unsupported path '{}'".format(path), origin)
+        return respond_error(f"Unsupported path '{path}'", origin)
 
     allowed_origins = ['https://bugalert.org', 'http://localhost:8000']
     if not headers.get('origin') or headers.get('origin') not in allowed_origins:
-         return respond_error("Unsupported origin '{}'".format(headers.get('origin', '')), origin)
+        origin_for_msg = headers.get('origin', '')
+        return respond_error(f"Unsupported origin '{origin_for_msg}'", origin)
     elif method == 'OPTIONS':
         return respond_success("", origin)
     elif method == 'GET' and path == 'health':
@@ -119,8 +122,13 @@ def lambda_handler(event, context):
             return respond_error("API key invalid.", origin)
 
         email_file_id, sms_file_id, phone_file_id = upload_contact_list(body.get('category'))
-        json_content = f"{{\"status\": \"success\", \"email_file_id\": \"{email_file_id}\", \"sms_file_id\": \"{sms_file_id}\", \"phone_file_id\": \"{phone_file_id}\"}}"
-        return respond_success(json_content, origin)
+        msg = {
+          "status": "success",
+          "email_file_id": email_file_id,
+          "sms_file_id": sms_file_id,
+          "phone_file_id": phone_file_id
+        }
+        return respond_success(msg, origin)
     elif method == 'POST' and path == 'verify':
         # Fire off email to confirm the user is allowed to make subscription changes.
         locally_computed_hmac = hmac.new(hmacsecret, codecs.encode(email), hashlib.sha256).digest()
@@ -153,7 +161,7 @@ def lambda_handler(event, context):
             Source="Bug Alert <no-reply@bugalert.org>",
         )
 
-        return respond_success("{\"status\": \"success\"}", origin)
+        return respond_success({"status": "success"}, origin)
 
     # Get the signature bytes
     signature = body.get('signature')
@@ -234,7 +242,7 @@ def lambda_handler(event, context):
         if (sms_opted_in or phone_opted_in) and phone_country_code == 1 and phone_number:
             send_telephony_confirmation(phone_number)
 
-        return respond_success("{\"status\": \"success\"}", origin)
+        return respond_success({"status": "success"}, origin)
 
     return respond_error(f"Unsupported method {method}", origin, status=405)
 

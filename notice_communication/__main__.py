@@ -5,15 +5,18 @@ import re
 import sys
 import tweepy
 import requests
+import datetime
+import json
 
+from email_content import html_template
 from google.cloud import texttospeech
 from requests_oauthlib import OAuth1Session
-
+from sendgrid import SendGridAPIClient
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-TEXTEMALL_BASE_DOMAIN = "staging-rest.call-em-all.com"
+TEXTEMALL_BASE_DOMAIN = "rest.text-em-all.com"
 SUBSCRIPTIONS_API_BASE_DOMAIN = "subscriptions.bugalert.org"
 SCRIPT_PATH = os.path.dirname(os.path.realpath(__file__))
 os.environ['PATH'] = f"{os.environ['PATH']}:{SCRIPT_PATH}"
@@ -24,7 +27,7 @@ def main():
     os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = '/tmp/gcp.key'
 
     filename = sys.argv[1]
-    summary, category = get_summary_and_category(filename)
+    summary, category, title = get_content_meta(filename)
     url = f"https://bugalert.org/{filename.replace('md', 'html')}"
 
     if os.getenv('TWITTER_BEARER_TOKEN'):
@@ -33,12 +36,16 @@ def main():
         tweet = f"{f'{tweet_summary}...'} {url} #BugAlertNotice"
         twitter.create_tweet(text=tweet)
 
+    email_file_id, sms_file_id, phone_file_id = update_contact_list(category)
+    if os.getenv('SENDGRID_API_KEY'):
+        create_email_broadcast(summary, category, title, url, os.path.basename(filename), email_file_id)
+
     if os.getenv('TEXT_EM_ALL_ID'):
-        send_telephony(summary, category, url, filename)
+        send_telephony(summary, category, title, url, filename)
 
     print("Operations complete.")
 
-def send_telephony(summary, category, url, filename):
+def send_telephony(summary, category, title, url, filename, email_file_id, sms_file_id, phone_file_id):
     # Dynamic import to avoid loading up ffmpeg early
     # or unnecessarily.
     from pydub import AudioSegment
@@ -61,25 +68,24 @@ def send_telephony(summary, category, url, filename):
     final_filename = os.path.basename(filename) + ".mp3"
     final.export(final_filename, format="mp3")
 
-    if os.getenv('TEXT_EM_ALL_ID'):
-        sms_file_id, phone_file_id = update_contact_list(category)
-        msg = f"BugAlert: {summary} {url}"
-        broadcast = create_sms_broadcast(msg, os.path.basename(filename), sms_file_id, sess)
-        print(broadcast)
+    msg = f"BugAlert: {summary} {url}"
+    broadcast = create_sms_broadcast(msg, os.path.basename(filename), sms_file_id, sess)
+    print(broadcast)
 
-        audio_id = upload_audio(final_filename, sess)
-        broadcast = create_phone_broadcast(audio_id, final_filename, phone_file_id, sess)
-        print(broadcast)
+    audio_id = upload_audio(final_filename, sess)
+    broadcast = create_phone_broadcast(audio_id, final_filename, phone_file_id, sess)
+    print(broadcast)
 
 def update_contact_list(category):
    headers = {"Origin": "https://bugalert.org"}
    payload = {"category": category,
-              "email": "nobody@example.com"} # email field required on API validation rules
+              "email": "nobody@example.com",
+              "api_key": os.getenv('API_KEY')} # email field required on API validation rules
    response = requests.post(f"https://{SUBSCRIPTIONS_API_BASE_DOMAIN}/listup", headers=headers, json=payload)
    response.raise_for_status()
    response_dict = response.json()
 
-   return response_dict.get('sms_file_id'), response_dict.get('phone_file_id')
+   return response_dict.get('email_file_id'), response_dict.get('sms_file_id'), response_dict.get('phone_file_id')
 
 def generate_tts(summary):
     # Instantiates a client
@@ -107,13 +113,17 @@ def generate_tts(summary):
     return response
 
 
-def get_summary_and_category(filename):
+def get_content_meta(filename):
     with open(filename, 'r') as f:
         notice = f.read()
 
     pattern = "Summary: (.*)"
     groups = re.search(pattern, notice)
     summary = groups.group(1)
+
+    pattern = "Title: (.*)"
+    groups = re.search(pattern, notice)
+    title = groups.group(1)
 
     pattern = "Category: (.*)"
     groups = re.search(pattern, notice)
@@ -130,8 +140,9 @@ def get_summary_and_category(filename):
 
     print(summary)
     print(category)
+    print(title)
 
-    return summary, category
+    return summary, category, title
 
 def upload_audio(filename, sess):
     url = f"https://{TEXTEMALL_BASE_DOMAIN}/v1/audio/{filename}"
@@ -159,6 +170,35 @@ def create_sms_broadcast(msg, filename, sms_file_id, sess):
     payload={'BroadcastName': filename, 'BroadcastType': 'SMS', 'StartDate': '', 'TextMessage': msg, 'FileUploads': [{'FileID': sms_file_id}]}
     response = sess.post(url, json=payload)
     return response.json()
+
+def create_email_broadcast(summary, category, title, url, filename, email_file_id):
+    sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
+
+    # Give SendGrid a bit to process the contact list additions
+    send_date = datetime.datetime.utcnow() + datetime.timedelta(minutes=3)
+    send_date = send_date.replace(microsecond=0).isoformat() + "Z"
+    data = {
+        "name": f"{filename}-{send_date}",
+        "send_at": send_date,
+        "send_to": { "list_ids": [email_file_id] },
+        "email_config": {
+            "subject": f"Bug Alert Notice: {title}",
+            "generate_plain_content": True,
+            "html_content": html_template.replace("{title}", title).replace("{summary}", summary).replace("{url}", url),
+            "custom_unsubscribe_url": "https://bugalert.org/content/pages/my-subscriptions.html",
+            "sender_id": 2415793
+        }
+    }
+
+    response = sg.client.marketing.singlesends.post(
+        request_body=data
+    )
+    single_send_id = json.loads(response.body).get('id')
+
+    # Signal to the campaign that everything is final and ready to ship
+    response = sg.client.marketing.singlesends._(single_send_id).schedule.put(
+        request_body={"send_at": send_date}
+    )
 
 def get_twitter_client():
     api = tweepy.Client(

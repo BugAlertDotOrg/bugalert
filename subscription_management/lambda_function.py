@@ -7,23 +7,28 @@ import hashlib
 import hmac
 import base64
 import boto3
+import requests
 
 import simplejson as json
+from datetime import datetime
 from requests_oauthlib import OAuth1Session
+from sendgrid import SendGridAPIClient
 from boto3.dynamodb.conditions import Key, Attr
 from email_validator import validate_email, EmailNotValidError
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-dynamo = boto3.resource('dynamodb')
+dynamo = boto3.resource('dynamodb', region_name="us-east-1")
 table = dynamo.Table('bugalert-subscriptions-prod')
+
+sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
 
 ses = boto3.client('ses', region_name="us-east-1")
 hmacsecret = os.getenv('HMACSECRET')
 hmacsecret = codecs.encode(hmacsecret)
 
-TEXTEMALL_BASE_DOMAIN = "staging-rest.call-em-all.com"
+TEXTEMALL_BASE_DOMAIN = "rest.text-em-all.com"
 sess = OAuth1Session(os.getenv('TEXT_EM_ALL_ID'),
                      client_secret=os.getenv('TEXT_EM_ALL_SECRET'),
                      resource_owner_key=os.getenv('TEXT_EM_ALL_TOKEN'))
@@ -110,11 +115,18 @@ def lambda_handler(event, context):
         # RPC to dump the contact list from dynamo into telephony provider.
         # A future improvement could be made to authenticate this, but for the moment,
         # I don't forsee anyone DoS-ing this endpoint causing any harm.
-        sms_file_id, phone_file_id = upload_telephony_contact_list(body.get('category'))
+        if not os.getenv('API_KEY') or not body.get('api_key'):
+            return respond_error("API key not set or sent.", origin)
+
+        if not hmac.compare_digest(os.getenv('API_KEY'), body.get('api_key')):
+            return respond_error("API key invalid.", origin)
+
+        email_file_id, sms_file_id, phone_file_id = upload_contact_list(body.get('category'))
         msg = {
-            "status": "success",
-            "sms_file_id": sms_file_id,
-            "phone_file_id": phone_file_id
+          "status": "success",
+          "email_file_id": email_file_id,
+          "sms_file_id": sms_file_id,
+          "phone_file_id": phone_file_id
         }
         return respond_success(msg, origin)
     elif method == 'POST' and path == 'verify':
@@ -222,27 +234,33 @@ def lambda_handler(event, context):
             if body.get(category) and 'p' in body.get(category):
                 phone_opted_in = True
 
-        if sms_opted_in and phone_country_code == 1 and phone_number:
-            send_sms_confirmation(phone_number)
+        #if sms_opted_in and phone_country_code == 1 and phone_number:
+        #    send_sms_confirmation(phone_number)
 
-        if phone_opted_in and phone_country_code == 1 and phone_number:
-            send_phone_confirmation(phone_number)
+        #if phone_opted_in and phone_country_code == 1 and phone_number:
+        #    send_phone_confirmation(phone_number)
+        if (sms_opted_in or phone_opted_in) and phone_country_code == 1 and phone_number:
+            send_telephony_confirmation(phone_number)
 
         return respond_success({"status": "success"}, origin)
 
     return respond_error(f"Unsupported method {method}", origin, status=405)
 
-def send_sms_confirmation(phone_number):
-    conversation_id = make_conversation(phone_number)
-    send_message(conversation_id, "Bug Alert: you are opted in to SMS-based notices. Visit https://bugalert.org to manage notice subscriptions.")
+#def send_sms_confirmation(phone_number):
+#    conversation_id = make_conversation(phone_number)
+#    send_message(conversation_id, "Bug Alert: you are opted in to SMS-based notices. Visit https://bugalert.org/content/pages/my-subscriptions.html to manage notice subscriptions.")
 
-def send_phone_confirmation(phone_number):
+#def send_phone_confirmation(phone_number):
+#    conversation_id = make_conversation(phone_number)
+#    send_message(conversation_id, "Bug Alert: you are opted in to phone-based notices. Please note that due to limitations with our telephony provider, calls will come from a different phone number, which you should save as a contact: +1 (507) 668-8567. Visit https://bugalert.org/content/pages/my-subscriptions.html to manage notice subscriptions.")
+
+def send_telephony_confirmation(phone_number):
     conversation_id = make_conversation(phone_number)
-    send_message(conversation_id, "Bug Alert: you are opted in to phone-based notices. Please note that due to limitations with our telephony provider, calls will come from a different phone number, which you should save as a contact: +1 (507) 668-8567. Visit https://bugalert.org to manage notice subscriptions.")
+    send_message(conversation_id, "Bug Alert: you are opted in. SMS notices will come from this number; calls will come from +1 (507) 668-8567. Save both to contacts.")
 
 def make_conversation(phone_number):
     url = f"https://{TEXTEMALL_BASE_DOMAIN}/v1/conversations"
-    payload={'TextPhoneNumber': '18669481703', 'PhoneNumber': phone_number}
+    payload={'TextPhoneNumber': '18332446351', 'PhoneNumber': phone_number}
     response = sess.post(url, json=payload)
     print(response.json())
     return response.json().get('ConversationID')
@@ -253,8 +271,8 @@ def send_message(conversation_id, msg):
     response = sess.post(url, json=payload)
     print(response.json())
 
-def upload_telephony_contact_list(category):
-    response = table.scan(FilterExpression = Attr(category).contains('s') | Attr(category).contains('p'))
+def upload_contact_list(category):
+    response = table.scan(FilterExpression = Attr(category).contains('e') |Attr(category).contains('s') | Attr(category).contains('p'))
     data = response['Items']
 
     while 'LastEvaluatedKey' in response:
@@ -262,30 +280,78 @@ def upload_telephony_contact_list(category):
         data.extend(response['Items'])
 
     # TODO tempfile lib!
-    with open('/tmp/sms.csv', 'w') as sms_file, open('/tmp/phone.csv', 'w') as phone_file:
-        sms_file.write("First Name,Last Name,Notes,Phone Number")
-        phone_file.write("First Name,Last Name,Notes,Phone Number")
+    with open('/tmp/email.csv', 'w') as email_file, \
+         open('/tmp/sms.csv', 'w') as sms_file, \
+         open('/tmp/phone.csv', 'w') as phone_file:
+        email_file.write("Email\n")
+        sms_file.write("First Name,Last Name,Notes,Phone Number\n")
+        phone_file.write("First Name,Last Name,Notes,Phone Number\n")
         # https://newbedev.com/using-boto3-in-python-to-acquire-results-from-dynamodb-and-parse-into-a-usable-variable-or-dictionary
         for i in data:
             contact = ast.literal_eval((json.dumps(i)))
+            print(contact)
+            if 'e' in contact[category]:
+                email_file.write(f"{contact.get('email')}\n")
             if 's' in contact[category] and contact.get('phone_country_code') and contact.get('phone_number') and contact.get('phone_country_code') == 1:
+                # Text-Em-All seems to need dummy values for name&notes to not flip out
                 sms_file.write(f"Bugs,Allert,bugs.allert@example.com,1{contact.get('phone_number')}\n")
             if 'p' in contact[category] and contact.get('phone_country_code') and contact.get('phone_number') and contact.get('phone_country_code') == 1:
                 phone_file.write(f"Bugs,Allert,bugs.allert@example.com,1{contact.get('phone_number')}\n")
 
-        # Now put them on telephony services
-        sms_file_id = upload_contacts('/tmp/sms.csv')
-        phone_file_id = upload_contacts('/tmp/phone.csv')
-        print(f"sms_file_id: {sms_file_id}")
-        print(f"phone_file_id: {phone_file_id}")
-        return sms_file_id, phone_file_id
-    
+    # Now put them on telephony services
+    email_file_id = upload_email_contacts('/tmp/email.csv')
+    sms_file_id = upload_telephony_contacts('/tmp/sms.csv')
+    phone_file_id = upload_telephony_contacts('/tmp/phone.csv')
+    print(f"email_file_id: {sms_file_id}")
+    print(f"sms_file_id: {sms_file_id}")
+    print(f"phone_file_id: {phone_file_id}")
 
-def upload_contacts(filepath):
+    return email_file_id, sms_file_id, phone_file_id
+
+def upload_email_contacts(filepath):
+    list_name = datetime.now().strftime("%Y-%m-%d-%H:%M:%S.%f")
+    # Create the list
+    response = sg.client.marketing.lists.post(
+        request_body={"name": list_name}
+    )
+    list_id = json.loads(response.body).get('id')
+
+    # Create the upload URI
+    data = {
+        "file_type": "csv",
+        "field_mappings": [
+            "_rf2_T"
+        ],
+        "list_ids": [list_id]
+    }
+
+    response = sg.client.marketing.contacts.imports.put(
+        request_body=data
+    )
+    print(response.status_code)
+    print(response.body)
+    print(response.headers)
+    response = json.loads(response.body)
+    upload_uri = response.get('upload_uri')
+    upload_headers = response.get('upload_headers')
+
+    # This respose is terrible and has to be dictionaried
+    upload_headers = [{pair.get('header'): pair.get('value')} for pair in upload_headers]
+
+    with open(filepath, 'r') as f:
+        payload = f.read()
+    print(f"Sending payload: {payload}")
+
+    response = requests.put(upload_uri, headers=upload_headers[0], data=open(filepath,'r').read())
+    response.raise_for_status()
+
+    return list_id
+    
+def upload_telephony_contacts(filepath):
     with open(filepath, 'r') as f:
         payload = f.read()
 
-    print(f"Sending payload: {payload}"
+    print(f"Sending payload: {payload}")
     url = f"https://{TEXTEMALL_BASE_DOMAIN}/v1/fileuploads"
     headers = {
           'Accept': 'application/json',

@@ -18,5 +18,5 @@ my intent is to keep this effort funded by community/industry donations, if it i
 
 **Contributions are highly encouraged!** We also need a team of volunteers from around the world who can review and rapidly merge
 GitHub pull requests detailing new issues, as they come in. Volunteers need to be kind, level-headed individuals who are willing to
-engage a diverse set of people in the security community with unwaivering professionalism and no ego. If that sounds like you,
+engage a diverse set of people in the security community with unwavering professionalism and no ego. If that sounds like you,
 <a href="https://github.com/sullivanmatt/bugalert/issues/new?labels=personnel&title=I+would+like+to+volunteer!&body=Tell+us+about+yourself.+We+want+to+ensure+volunteers+have+relevant+security+expertise,+so+please+include+information+and/or+links+related+to+your+skillset+or+past+projects.">open a GitHub issue letting us know!</a>

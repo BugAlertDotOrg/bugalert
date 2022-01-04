@@ -226,27 +226,33 @@ def lambda_handler(event, context):
             if body.get(category) and 'p' in body.get(category):
                 phone_opted_in = True
 
-        if sms_opted_in and phone_country_code == 1 and phone_number:
-            send_sms_confirmation(phone_number)
+        #if sms_opted_in and phone_country_code == 1 and phone_number:
+        #    send_sms_confirmation(phone_number)
 
-        if phone_opted_in and phone_country_code == 1 and phone_number:
-            send_phone_confirmation(phone_number)
+        #if phone_opted_in and phone_country_code == 1 and phone_number:
+        #    send_phone_confirmation(phone_number)
+        if (sms_opted_in or phone_opted_in) and phone_country_code == 1 and phone_number:
+            send_telephony_confirmation(phone_number)
 
         return respond_success("{\"status\": \"success\"}", origin)
 
     return respond_error(f"Unsupported method {method}", origin, status=405)
 
-def send_sms_confirmation(phone_number):
-    conversation_id = make_conversation(phone_number)
-    send_message(conversation_id, "Bug Alert: you are opted in to SMS-based notices. Visit https://bugalert.org/content/pages/my-subscriptions.html to manage notice subscriptions.")
+#def send_sms_confirmation(phone_number):
+#    conversation_id = make_conversation(phone_number)
+#    send_message(conversation_id, "Bug Alert: you are opted in to SMS-based notices. Visit https://bugalert.org/content/pages/my-subscriptions.html to manage notice subscriptions.")
 
-def send_phone_confirmation(phone_number):
+#def send_phone_confirmation(phone_number):
+#    conversation_id = make_conversation(phone_number)
+#    send_message(conversation_id, "Bug Alert: you are opted in to phone-based notices. Please note that due to limitations with our telephony provider, calls will come from a different phone number, which you should save as a contact: +1 (507) 668-8567. Visit https://bugalert.org/content/pages/my-subscriptions.html to manage notice subscriptions.")
+
+def send_telephony_confirmation(phone_number):
     conversation_id = make_conversation(phone_number)
-    send_message(conversation_id, "Bug Alert: you are opted in to phone-based notices. Please note that due to limitations with our telephony provider, calls will come from a different phone number, which you should save as a contact: +1 (507) 668-8567. Visit https://bugalert.org/content/pages/my-subscriptions.html to manage notice subscriptions.")
+    send_message(conversation_id, "Bug Alert: you are opted in. SMS notices will come from this number; calls will come from +1 (507) 668-8567. Save both to contacts.")
 
 def make_conversation(phone_number):
     url = f"https://{TEXTEMALL_BASE_DOMAIN}/v1/conversations"
-    payload={'TextPhoneNumber': '18669481703', 'PhoneNumber': phone_number}
+    payload={'TextPhoneNumber': '18332446351', 'PhoneNumber': phone_number}
     response = sess.post(url, json=payload)
     print(response.json())
     return response.json().get('ConversationID')

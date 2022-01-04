@@ -41,11 +41,11 @@ def main():
         create_email_broadcast(summary, category, title, url, os.path.basename(filename), email_file_id)
 
     if os.getenv('TEXT_EM_ALL_ID'):
-        send_telephony(summary, category, title, url, filename)
+        send_telephony(summary, category, title, url, filename, sms_file_id, phone_file_id)
 
     print("Operations complete.")
 
-def send_telephony(summary, category, title, url, filename, email_file_id, sms_file_id, phone_file_id):
+def send_telephony(summary, category, title, url, filename, sms_file_id, phone_file_id):
     # Dynamic import to avoid loading up ffmpeg early
     # or unnecessarily.
     from pydub import AudioSegment

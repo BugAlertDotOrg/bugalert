@@ -585,7 +585,7 @@ html_template = """
          </tr>
     <tr>
     <td valign="top" class="width20" style="border-collapse: collapse;width: 20px;">&nbsp;</td>
-      <td valign="top" style="padding-bottom:0;border-collapse:collapse;"><img src="https://i.imgur.com/CKJNdUg.png" width="100%" height="100%" class="imageFix resize_img" style="-ms-interpolation-mode:bicubic;height:auto;line-height:100%;outline-style:none;text-decoration:none;border-width:0;border-style:none;display:block;" /></td>
+      <td valign="top" style="padding-bottom:0;border-collapse:collapse;"><img src="https://bugalert.org/images/bugalert-logo.png" width="100%" height="100%" class="imageFix resize_img" style="-ms-interpolation-mode:bicubic;height:auto;line-height:100%;outline-style:none;text-decoration:none;border-width:0;border-style:none;display:block;" /></td>
       <td valign="top" class="width20" style="border-collapse: collapse;width: 20px;">&nbsp;</td>
   </tr>
     <tr>

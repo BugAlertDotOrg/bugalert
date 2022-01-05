@@ -21,6 +21,7 @@
     </div>
     <h4>Your Contact Information</h4>
     <div id="email" style="font-size: 1.1em;">&nbsp;</div><br>
+    Country Code<br>
     <!-- Dropdown --> 
     <select required id="select-country" style="width: 400px;">
     <option value='0' disabled selected value>Select Country Code (Phone Number Prefix)</option>
@@ -242,7 +243,10 @@
     <option value='263'>Zimbabwe (+263)</option>
     </select>
     <br><br>
-    <input id="phone-number" type="text" style="width: 400px; padding-left: 8px; color: #444; font-size: 1em" placeholder="Phone number (without country code, numbers only)">
+    Phone Number<br>
+    <input id="phone-number" type="text" style="width: 400px; padding-left: 8px; color: #444; font-size: 1em" placeholder="Phone number (without country code, numbers only)"><br><br>
+    Webhook URL <a href="/content/pages/webhook-format.html">(view request format)</a><br><strong>Webhooks coming soon. You can configure and save, but webhooks are not yet triggered when notices are posted.</strong><br>
+    <input id="webhook-url" type="text" style="width: 400px; padding-left: 8px; color: #444; font-size: 1em" placeholder="https://example.com/bugalert-webhook/submit">
     <br>
 
     <table class="styled-table">
@@ -251,7 +255,8 @@
                 <th>&nbsp;</th>
                 <th>Email</th>
                 <th>SMS</th>
-                <th>Phone Call</th>
+                <th>Phone<br>Call</th>
+                <th>Web<br>Hook</th>
             </tr>
         </thead>
         <tbody>
@@ -260,30 +265,35 @@
                 <td><input type="checkbox" id="frameworks_libs_components_email"></td>
                 <td><input type="checkbox" id="frameworks_libs_components_sms"></td>
                 <td><input type="checkbox" id="frameworks_libs_components_phone"></td>
+                <td><input type="checkbox" id="frameworks_libs_components_webhook"></td>
             </tr>
             <tr class="">
                 <td class=""><strong>Operating Systems</strong><br><small>Kernel and native components of desktop, server, and mobile OSes.<br><em>Examples: Windows SMB, Linux Kernel, iMessage, Apple Darwin.</em></small></td>
                 <td><input type="checkbox" id="operating_systems_email"></td>
                 <td><input type="checkbox" id="operating_systems_sms"></td>
                 <td><input type="checkbox" id="operating_systems_phone"></td>
+                <td><input type="checkbox" id="operating_systems_webhook"></td>
             </tr>
             <tr class="">
                 <td class=""><strong>Services & System Applications</strong><br><small>Services not written by the OS vendor, core components, and language runtimes.<br><em>Examples: openssh, nodejs, nginx, Java, vim, curl, Python.</em></small></td>
                 <td><input type="checkbox" id="services_system_applications_email"></td>
                 <td><input type="checkbox" id="services_system_applications_sms"></td>
                 <td><input type="checkbox" id="services_system_applications_phone"></td>
+                <td><input type="checkbox" id="services_system_applications_webhook"></td>
             </tr>
             <tr class="">
                 <td class=""><strong>End-User Applications</strong><br><small>Applications that your average user installs and uses regularly.<br><em>Examples: Chrome, Adobe Reader, Spotify, VLC, Steam.</em></small></td>
                 <td><input type="checkbox" id="end_user_applications_email"></td>
                 <td><input type="checkbox" id="end_user_applications_sms"></td>
                 <td><input type="checkbox" id="end_user_applications_phone"></td>
+                <td><input type="checkbox" id="end_user_applications_webhook"></td>
             </tr>
             <tr class="">
                 <td class=""><strong>Test Notices</strong><br><small>Once per quarter, help us test our notification infrastructure at scale.<br><em>We would really appreciate it!</em></small></td>
                 <td><input type="checkbox" id="test_email"></td>
                 <td><input type="checkbox" id="test_sms"></td>
                 <td><input type="checkbox" id="test_phone"></td>
+                <td><input type="checkbox" id="test_webhook"></td>
             </tr>
         </tbody>
     </table>

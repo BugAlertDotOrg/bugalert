@@ -177,7 +177,8 @@
             "email": subscription_email,
             "signature": subscription_signature,
             "phone_country_code": $('#select-country').val(),
-            "phone_number": $('#phone-number').val()
+            "phone_number": $('#phone-number').val(),
+            "webhook_url": $('#webhook-url').val()
           }
 
           for (let i = 0; i < components.length; i++){
@@ -192,6 +193,9 @@
               }
               if ($('#' + component + '_sms').is(":checked")) {
                   data[component] = data[component] + "s";
+              }
+              if ($('#' + component + '_webhook').is(":checked")) {
+                  data[component] = data[component] + "w";
               }
 
               if (data[component] === "") {
@@ -232,6 +236,7 @@
           if (data.phone_country_code && data.phone_number) {
               $('#select-country').val(data.phone_country_code).change();
               $('#phone-number').val(data.phone_number);
+              $('#webhook-url').val(data.webhook_url);
           }
 
           for (let i = 0; i < components.length; i++){
@@ -244,6 +249,9 @@
               }
               if (data[component] && data[component].includes('s')) {
                   $('#' + component + '_sms').prop( "checked", true );
+              }
+              if (data[component] && data[component].includes('w')) {
+                  $('#' + component + '_webhook').prop( "checked", true );
               }
           }
       }

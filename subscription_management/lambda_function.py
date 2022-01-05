@@ -210,12 +210,14 @@ def lambda_handler(event, context):
             Key={
                 'email': email
             },
-            UpdateExpression = 'SET phone_number = :phone_number, phone_country_code = :phone_country_code, frameworks_libs_components = :frameworks_libs_components, ' \
+            UpdateExpression = 'SET phone_number = :phone_number, phone_country_code = :phone_country_code, ' \
+                               'webhook_url = :webhook_url, frameworks_libs_components = :frameworks_libs_components, ' \
                                'operating_systems = :operating_systems, services_system_applications = :services_system_applications, ' \
                                'end_user_applications = :end_user_applications, test = :test',
             ExpressionAttributeValues = {
                 ':phone_number': phone_number,
                 ':phone_country_code': phone_country_code,
+                ':webhook_url': body.get('webhook_url'),
                 ':frameworks_libs_components': body.get('frameworks_libs_components'),
                 ':operating_systems': body.get('operating_systems'),
                 ':services_system_applications': body.get('services_system_applications'),

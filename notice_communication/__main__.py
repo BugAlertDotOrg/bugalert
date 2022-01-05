@@ -27,7 +27,7 @@ def main():
     os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = '/tmp/gcp.key'
 
     filename = sys.argv[1]
-    summary, category, title = get_content_meta(filename)
+    summary, category, title, slug = get_content_meta(filename)
     url = f"https://bugalert.org/{filename.replace('md', 'html')}"
 
     if os.getenv('TWITTER_BEARER_TOKEN'):
@@ -129,6 +129,10 @@ def get_content_meta(filename):
     groups = re.search(pattern, notice)
     category_verbose = groups.group(1)
 
+    pattern = "Slug: (.*)"
+    groups = re.search(pattern, notice)
+    category_verbose = groups.group(1)
+
     category_keys = {
         "Software Frameworks, Libraries, and Components": "frameworks_libs_components",
         "Operating Systems": "operating_systems",
@@ -139,10 +143,11 @@ def get_content_meta(filename):
     category = category_keys[category_verbose]
 
     print(summary)
-    print(category)
     print(title)
+    print(category)
+    print(slug)
 
-    return summary, category, title
+    return summary, category, title, slug
 
 def upload_audio(filename, sess):
     url = f"https://{TEXTEMALL_BASE_DOMAIN}/v1/audio/{filename}"

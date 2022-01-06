@@ -14,7 +14,7 @@ from datetime import datetime
 from requests_oauthlib import OAuth1Session
 from sendgrid import SendGridAPIClient
 from boto3.dynamodb.conditions import Key, Attr
-from email_validator import validate_email, EmailNotValidError
+#from validate_email import validate_email  # there is some issue with importing this, disabling for now
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -102,14 +102,11 @@ def lambda_handler(event, context):
     if not email:
         return respond_error("No email field value", origin)
 
-    try:
-      # Validate email
-      valid = validate_email(email)
-      # Update with the normalized form.
-      email = valid.email
-    except EmailNotValidError as e:
-      # email is not valid, exception message is human-readable
-      return respond_error("Email field is not valid: '{}'".format(str(e)), origin)
+    # Validate email
+    #valid = validate_email(email)
+    #if not valid:
+    #  # email is not valid, exception message is human-readable
+    #  return respond_error("Email field is not valid: '{}'".format(str(e)), origin)
 
     if method == 'POST' and path == 'listup':
         # RPC to dump the contact list from dynamo into telephony provider.

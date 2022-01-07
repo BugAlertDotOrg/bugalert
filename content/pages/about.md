@@ -1,12 +1,12 @@
 title: About
 
 #### Bug Alert is a service for alerting security and IT professionals of high-impact and 0day vulnerabilities.
-Hi, I'm Matthew Sullivan, a security practitioner, and the creator of Bug Alert.
+Hi, I'm Matthew Sullivan, a security practitioner, and the founder of Bug Alert.
 
 When the Log4j vulnerability was first discovered, it was reported, as most are, on Twitter. 13 hours passed between the time it was
 disclosed on Twitter to the time LunaSec put out their widely-shared blog post, and 5 hours passed after that before I saw
 it up at the top of [Hacker News](https://news.ycombinator.com). By then, precious time for reacting had been completely
-lost; it was nearly midnight in my local timezone, and all the people I needed to mobilize were already in bed.
+lost; it was nearly midnight or past midnight for most people located in the United States.
 
 There is no central clearinghouse for notifying security professionals about critical security issues. The process for issuing security
 bulletins from organizations like the [CISA](https://www.cisa.gov/) are both welcomed and well-intentioned, but by the time a CVE identifier

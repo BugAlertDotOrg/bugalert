@@ -32,3 +32,5 @@ Component names should be as concise and accurate as possible, e.g. `jackson-dat
 - [ ] I have run Pelican locally to ensure my changes have not disrupted the look, feel, or functionality of the site.
 - [ ] I have checked my code and corrected any misspellings.
 - [ ] I have added a pull request description which details the nature of this change.
+
+Leave the following intact, which notifies our volunteer team: @BugAlertDotOrg/volunteer-team 

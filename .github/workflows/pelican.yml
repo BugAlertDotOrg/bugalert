@@ -13,10 +13,14 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - run: |
-        cd "${GITHUB_WORKSPACE}"
-         git clone git@github.com:BugAlertDotOrg/bugalert-pelican.git
+    - uses: actions/checkout@v2
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        repository: BugAlertDotOrg/bugalert-pelican
+        path: './bugalert/'
     - uses: nelsonjchen/gh-pages-pelican-action@0.1.10
       env:
         GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
         GH_PAGES_CNAME: bugalert.org
+        PELICAN_CONFIG_FILE: bugalert-pelican/pelicanconf.py

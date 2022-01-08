@@ -1,8 +1,6 @@
 name: Pelican CI
 
 on:
-  # Trigger the workflow on push or pull request,
-  # but only for the master branch
   push:
     branches:
       - main
@@ -11,9 +9,13 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
+    environment: bugalert-invoke-lambda
 
     steps:
     - uses: actions/checkout@v2
+    - run: |
+        cd "${GITHUB_WORKSPACE}"
+         git clone git@github.com:BugAlertDotOrg/bugalert-pelican.git
     - uses: nelsonjchen/gh-pages-pelican-action@0.1.10
       env:
         GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}

@@ -1,2 +1,0 @@
-Pygments
-pygments-style-github

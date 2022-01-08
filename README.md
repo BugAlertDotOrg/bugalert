@@ -150,8 +150,14 @@ Audacity, VLC, Steam, Microsoft Office._
 Pull requests are welcome and encouraged.
 
 ### Run Locally
+Clone this repo and `cd` into it:
+`git@github.com:BugAlertDotOrg/bugalert.git && cd bugalert`
+
+Clone the bugalert-pelican repo in as well:
+`git@github.com:BugAlertDotOrg/bugalert-pelican.git`
+
 In a Python 3.6+ environment, install all project requirements:
 `pip install -Ur requirements.txt`
 
 After that, you can run a local instance with:
-`pelican --autoreload --listen -s pelicanconf.py`
+`rm -rf output && pelican --autoreload --listen -s bugalert-pelican/pelicanconf.py`

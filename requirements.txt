@@ -1,4 +1,0 @@
-pelican
-markdown
-pelican-alias
-pymdown-extensions

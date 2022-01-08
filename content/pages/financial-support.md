@@ -1,4 +1,6 @@
+---
 title: Financial Support
+---
 
 As Bug Alert grows, it will be a moderately costly service to run. If a subscriber receives a notice using all three methods (email, SMS, phone), that notice will cost approximately $0.20 USD to send. Multiply that by, say, 10,000 subscribers, and we find that this notice suddenly costs $2,000 USD to send.
 

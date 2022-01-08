@@ -1,4 +1,6 @@
+---
 title: About
+---
 
 #### Bug Alert is a service for alerting security and IT professionals of high-impact and 0day vulnerabilities.
 Hi, I'm Matthew Sullivan, a security practitioner, and the founder of Bug Alert.

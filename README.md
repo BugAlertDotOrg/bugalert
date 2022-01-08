@@ -157,7 +157,7 @@ Clone the bugalert-pelican repo in as well:
 `git@github.com:BugAlertDotOrg/bugalert-pelican.git`
 
 In a Python 3.6+ environment, install all project requirements:
-`pip install -Ur requirements.txt`
+`pip install -Ur bugalert-pelican/requirements.txt`
 
 After that, you can run a local instance with:
 `rm -rf output && pelican --autoreload --listen -s bugalert-pelican/pelicanconf.py`

@@ -12,13 +12,16 @@ jobs:
     environment: bugalert-invoke-lambda
 
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/checkout@v2
-    - name: Checkout
+    - name: Checkout bugalert
+      uses: actions/checkout@v2
+    - name: Checkout bugalert-pelican
       uses: actions/checkout@v2
       with:
         repository: BugAlertDotOrg/bugalert-pelican
         path: './bugalert/'
+    - run: |
+        ln -s "${GITHUB_WORKSPACE}/bugalert-pelican/requirements.txt" "${GITHUB_WORKSPACE}/requirements.txt"
+        sudo apt-get update && sudo apt-get install python3-pip -y 
     - uses: nelsonjchen/gh-pages-pelican-action@0.1.10
       env:
         GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}

@@ -1,4 +1,6 @@
+---
 title: Privacy Policy
+---
 
 ### Overview
 Bug Alert will never sell or make available your data. This project is not intended to make me (Matthew Sullivan - the founder and maintainer), money. In fact, I'm quite sure it will do the opposite with great efficiency.

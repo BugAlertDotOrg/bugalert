@@ -18,7 +18,10 @@ jobs:
       uses: actions/checkout@v2
       with:
         repository: BugAlertDotOrg/bugalert-pelican
-        path: './bugalert/'
+        path: './bugalert-pelican/'
+    - run: |
+        ls -ltah .
+        ls -ltah ../
     - run: |
         ln -s "${GITHUB_WORKSPACE}/bugalert-pelican/requirements.txt" "${GITHUB_WORKSPACE}/requirements.txt"
         sudo apt-get update && sudo apt-get install python3-pip -y 

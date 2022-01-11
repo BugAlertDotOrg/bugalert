@@ -38,7 +38,8 @@ def main():
     if os.getenv('TWITTER_BEARER_TOKEN'):
         twitter = get_twitter_client()
         tweet_summary = summary[:220] if len(summary) > 220 else summary
-        tweet = f"{f'{tweet_summary}...'} {url} #BugAlertNotice"
+        ellipsis = "..." if len(summary) > 220 else ""
+        tweet = f"{f'{tweet_summary}{ellipsis}'} {url} #BugAlertNotice"
         twitter.create_tweet(text=tweet)
 
     if os.getenv('SENDGRID_API_KEY') or os.getenv('TEXT_EM_ALL_ID'):

@@ -22,9 +22,10 @@ SCRIPT_PATH = os.path.dirname(os.path.realpath(__file__))
 os.environ['PATH'] = f"{os.environ['PATH']}:{SCRIPT_PATH}"
 
 def main():
-    with open('/tmp/gcp.key', 'w') as f:
-        f.write(os.getenv('GCP_KEY'))
-    os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = '/tmp/gcp.key'
+    if os.getenv('GCP_KEY'):
+        with open('/tmp/gcp.key', 'w') as f:
+            f.write(os.getenv('GCP_KEY'))
+        os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = '/tmp/gcp.key'
 
     filename = sys.argv[1]
     summary, category, title, slug = get_content_meta(filename)
@@ -131,7 +132,7 @@ def get_content_meta(filename):
 
     pattern = "Slug: (.*)"
     groups = re.search(pattern, notice)
-    category_verbose = groups.group(1)
+    slug = groups.group(1)
 
     category_keys = {
         "Software Frameworks, Libraries, and Components": "frameworks_libs_components",

@@ -6,6 +6,8 @@ on:
   push:
     branches:
       - main
+    paths:
+     - 'content/notices/*'
 env:
   TEXT_EM_ALL_ID: ${{ secrets.TEXT_EM_ALL_ID }}
   TEXT_EM_ALL_SECRET: ${{ secrets.TEXT_EM_ALL_SECRET }}

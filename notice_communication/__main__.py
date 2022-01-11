@@ -41,12 +41,13 @@ def main():
         tweet = f"{f'{tweet_summary}...'} {url} #BugAlertNotice"
         twitter.create_tweet(text=tweet)
 
-    email_file_id, sms_file_id, phone_file_id = update_contact_list(category)
-    if os.getenv('SENDGRID_API_KEY'):
-        create_email_broadcast(summary, category, title, url, os.path.basename(filename), email_file_id)
+    if os.getenv('SENDGRID_API_KEY') or os.getenv('TEXT_EM_ALL_ID'):
+        email_file_id, sms_file_id, phone_file_id = update_contact_list(category)
+        if os.getenv('SENDGRID_API_KEY'):
+            create_email_broadcast(summary, category, title, url, os.path.basename(filename), email_file_id)
 
-    if os.getenv('TEXT_EM_ALL_ID'):
-        send_telephony(summary, category, title, url, filename, sms_file_id, phone_file_id)
+        if os.getenv('TEXT_EM_ALL_ID'):
+            send_telephony(summary, category, title, url, filename, sms_file_id, phone_file_id)
 
     print("Operations complete.")
 

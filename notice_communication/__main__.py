@@ -30,6 +30,10 @@ def main():
     summary, category, title, slug = get_content_meta(filename)
     url = f"https://bugalert.org/{filename.replace('md', 'html')}"
 
+    # Send Telegram
+    if os.getenv('TELEGRAM_API_KEY'):
+        send_telegram(summary, category, title, url)
+
     if os.getenv('TWITTER_BEARER_TOKEN'):
         twitter = get_twitter_client()
         tweet_summary = summary[:220] if len(summary) > 220 else summary
@@ -44,6 +48,15 @@ def main():
         send_telephony(summary, category, title, url, filename, sms_file_id, phone_file_id)
 
     print("Operations complete.")
+
+def send_telegram(summary, category, title, url):
+    TELEGRAM_API_KEY = os.getenv('TELEGRAM_API_KEY')
+    TG_CHAT_ID = "@BugAlert"
+    msg = f"{title}: {summary}\n{url}"
+    url_to_send = f"https://api.telegram.org/bot{TELEGRAM_API_KEY}/sendMessage?chat_id={TG_CHAT_ID}&text={msg}"
+    response = requests.get(url_to_send)
+    response.raise_for_status()
+    print(response.json())
 
 def send_telephony(summary, category, title, url, filename, sms_file_id, phone_file_id):
     # Dynamic import to avoid loading up ffmpeg early

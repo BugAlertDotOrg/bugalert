@@ -22,9 +22,10 @@ SCRIPT_PATH = os.path.dirname(os.path.realpath(__file__))
 os.environ['PATH'] = f"{os.environ['PATH']}:{SCRIPT_PATH}"
 
 def main():
-    with open('/tmp/gcp.key', 'w') as f:
-        f.write(os.getenv('GCP_KEY'))
-    os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = '/tmp/gcp.key'
+    if os.getenv('GCP_KEY'):
+        with open('/tmp/gcp.key', 'w') as f:
+            f.write(os.getenv('GCP_KEY'))
+        os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = '/tmp/gcp.key'
 
     filename = sys.argv[1]
     summary, category, title, slug = get_content_meta(filename)
@@ -33,17 +34,36 @@ def main():
     if os.getenv('TWITTER_BEARER_TOKEN'):
         twitter = get_twitter_client()
         tweet_summary = summary[:220] if len(summary) > 220 else summary
-        tweet = f"{f'{tweet_summary}...'} {url} #BugAlertNotice"
+        ellipsis = "..." if len(summary) > 220 else ""
+        hashtag = "#BugAlertNews" if category == "bug_alert_news" else "#BugAlertNotice"
+        tweet = f"{f'{tweet_summary}{ellipsis}'} {url} {hashtag}"
         twitter.create_tweet(text=tweet)
 
-    email_file_id, sms_file_id, phone_file_id = update_contact_list(category)
-    if os.getenv('SENDGRID_API_KEY'):
-        create_email_broadcast(summary, category, title, url, os.path.basename(filename), email_file_id)
+    if category == "bug_alert_news":
+        return
 
-    if os.getenv('TEXT_EM_ALL_ID'):
-        send_telephony(summary, category, title, url, filename, sms_file_id, phone_file_id)
+    # Send Telegram
+    if os.getenv('TELEGRAM_API_KEY'):
+        send_telegram(summary, category, title, url)
+
+    if os.getenv('SENDGRID_API_KEY') or os.getenv('TEXT_EM_ALL_ID'):
+        email_file_id, sms_file_id, phone_file_id = update_contact_list(category)
+        if os.getenv('SENDGRID_API_KEY'):
+            create_email_broadcast(summary, category, title, url, os.path.basename(filename), email_file_id)
+
+        if os.getenv('TEXT_EM_ALL_ID'):
+            send_telephony(summary, category, title, url, filename, sms_file_id, phone_file_id)
 
     print("Operations complete.")
+
+def send_telegram(summary, category, title, url):
+    TELEGRAM_API_KEY = os.getenv('TELEGRAM_API_KEY')
+    TG_CHAT_ID = "@BugAlert"
+    msg = f"{title}: {summary}\n{url}"
+    url_to_send = f"https://api.telegram.org/bot{TELEGRAM_API_KEY}/sendMessage?chat_id={TG_CHAT_ID}&text={msg}"
+    response = requests.get(url_to_send)
+    response.raise_for_status()
+    print(response.json())
 
 def send_telephony(summary, category, title, url, filename, sms_file_id, phone_file_id):
     # Dynamic import to avoid loading up ffmpeg early
@@ -131,14 +151,15 @@ def get_content_meta(filename):
 
     pattern = "Slug: (.*)"
     groups = re.search(pattern, notice)
-    category_verbose = groups.group(1)
+    slug = groups.group(1)
 
     category_keys = {
         "Software Frameworks, Libraries, and Components": "frameworks_libs_components",
         "Operating Systems": "operating_systems",
         "Services & System Applications": "services_system_applications",
         "End-User Applications": "end_user_applications",
-        "Test": "test"
+        "Test": "test",
+        "Bug Alert News": "bug_alert_news"
     }
     category = category_keys[category_verbose]
 

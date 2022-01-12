@@ -30,7 +30,6 @@ def main():
     filename = sys.argv[1]
     summary, category, title, slug = get_content_meta(filename)
     url = f"https://bugalert.org/{filename.replace('md', 'html')}"
-
     if os.getenv('TWITTER_BEARER_TOKEN'):
         twitter = get_twitter_client()
         tweet_summary = summary[:220] if len(summary) > 220 else summary

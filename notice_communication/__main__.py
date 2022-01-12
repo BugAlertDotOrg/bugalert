@@ -30,17 +30,20 @@ def main():
     filename = sys.argv[1]
     summary, category, title, slug = get_content_meta(filename)
     url = f"https://bugalert.org/{filename.replace('md', 'html')}"
-
-    # Send Telegram
-    if os.getenv('TELEGRAM_API_KEY'):
-        send_telegram(summary, category, title, url)
-
     if os.getenv('TWITTER_BEARER_TOKEN'):
         twitter = get_twitter_client()
         tweet_summary = summary[:220] if len(summary) > 220 else summary
         ellipsis = "..." if len(summary) > 220 else ""
-        tweet = f"{f'{tweet_summary}{ellipsis}'} {url} #BugAlertNotice"
+        hashtag = "#BugAlertNews" if category == "bug_alert_news" else "#BugAlertNotice"
+        tweet = f"{f'{tweet_summary}{ellipsis}'} {url} {hashtag}"
         twitter.create_tweet(text=tweet)
+
+    if category == "bug_alert_news":
+        return
+
+    # Send Telegram
+    if os.getenv('TELEGRAM_API_KEY'):
+        send_telegram(summary, category, title, url)
 
     if os.getenv('SENDGRID_API_KEY') or os.getenv('TEXT_EM_ALL_ID'):
         email_file_id, sms_file_id, phone_file_id = update_contact_list(category)
@@ -154,7 +157,8 @@ def get_content_meta(filename):
         "Operating Systems": "operating_systems",
         "Services & System Applications": "services_system_applications",
         "End-User Applications": "end_user_applications",
-        "Test": "test"
+        "Test": "test",
+        "Bug Alert News": "bug_alert_news"
     }
     category = category_keys[category_verbose]
 

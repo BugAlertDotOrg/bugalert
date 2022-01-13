@@ -16,6 +16,8 @@ to help contribute.
 Our community has a Slack workspace where we discuss the codebase, our processes, etc. We highly encourage anyone
 looking to get involved with the project to join and engage in discussion _before_ starting work on any code.
 
+To join, visit https://join.slack.com/t/bug-alert/shared_invite/zt-1199f3i50-Fz2kn0D3Oa1z3fQBHTdzAw
+
 ## Code of Conduct
 As contributors and maintainers of this project, we pledge to respect all people who contribute through reporting
 issues, posting feature requests, updating documentation, submitting pull requests or patches, and other activities.

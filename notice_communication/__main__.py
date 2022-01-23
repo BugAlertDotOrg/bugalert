@@ -28,7 +28,7 @@ def main():
         os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = '/tmp/gcp.key'
 
     filename = sys.argv[1]
-    summary, category, title, slug = get_content_meta(filename)
+    summary, category, title, slug, tags = get_content_meta(filename)
     url = f"https://bugalert.org/{filename.replace('md', 'html')}"
     if os.getenv('TWITTER_BEARER_TOKEN'):
         twitter = get_twitter_client()
@@ -51,7 +51,7 @@ def main():
             create_email_broadcast(summary, category, title, url, os.path.basename(filename), email_file_id)
 
         if os.getenv('TEXT_EM_ALL_ID'):
-            send_telephony(summary, category, title, url, filename, sms_file_id, phone_file_id)
+            send_telephony(summary, category, title, tags, url, filename, sms_file_id, phone_file_id)
 
     print("Operations complete.")
 
@@ -64,7 +64,7 @@ def send_telegram(summary, category, title, url):
     response.raise_for_status()
     print(response.json())
 
-def send_telephony(summary, category, title, url, filename, sms_file_id, phone_file_id):
+def send_telephony(summary, category, title, tags, url, filename, sms_file_id, phone_file_id):
     # Dynamic import to avoid loading up ffmpeg early
     # or unnecessarily.
     from pydub import AudioSegment
@@ -91,9 +91,11 @@ def send_telephony(summary, category, title, url, filename, sms_file_id, phone_f
     broadcast = create_sms_broadcast(msg, os.path.basename(filename), sms_file_id, sess)
     print(broadcast)
 
-    audio_id = upload_audio(final_filename, sess)
-    broadcast = create_phone_broadcast(audio_id, final_filename, phone_file_id, sess)
-    print(broadcast)
+    # Only phone call for very high or critical severity, and not high severity 
+    if 'very high severity' in tags.lower() or 'critical severity' in tags.lower():
+        audio_id = upload_audio(final_filename, sess)
+        broadcast = create_phone_broadcast(audio_id, final_filename, phone_file_id, sess)
+        print(broadcast)
 
 def update_contact_list(category):
    headers = {"Origin": "https://bugalert.org"}
@@ -152,6 +154,10 @@ def get_content_meta(filename):
     groups = re.search(pattern, notice)
     slug = groups.group(1)
 
+    pattern = "Tags: (.*)"
+    groups = re.search(pattern, notice)
+    tags = groups.group(1)
+
     category_keys = {
         "Software Frameworks, Libraries, and Components": "frameworks_libs_components",
         "Operating Systems": "operating_systems",
@@ -166,8 +172,9 @@ def get_content_meta(filename):
     print(title)
     print(category)
     print(slug)
+    print(tags)
 
-    return summary, category, title, slug
+    return summary, category, title, slug, tags
 
 def upload_audio(filename, sess):
     url = f"https://{TEXTEMALL_BASE_DOMAIN}/v1/audio/{filename}"

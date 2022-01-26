@@ -1,5 +1,5 @@
 ---
-Title: Local Privilege Escalation in Linux
+Title: Local Privilege Escalation in Linux pkexec
 Date: 2022-01-25 20:42
 Category: Operating Systems
 Tags: 'pkexec', 'Very High'

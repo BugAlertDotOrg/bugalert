@@ -87,12 +87,12 @@ def send_telephony(summary, category, title, tags, url, filename, sms_file_id, p
     final_filename = os.path.basename(filename) + ".mp3"
     final.export(final_filename, format="mp3")
 
-    msg = f"BugAlert: {summary} {url}"
+    msg = f"Bug Alert: {summary} {url}"
     broadcast = create_sms_broadcast(msg, os.path.basename(filename), sms_file_id, sess)
     print(broadcast)
 
-    # Only phone call for very high or critical severity, and not high severity 
-    if 'very high severity' in tags.lower() or 'critical severity' in tags.lower():
+    # Only phone call for critical severity 
+    if 'critical severity' in tags.lower():
         audio_id = upload_audio(final_filename, sess)
         broadcast = create_phone_broadcast(audio_id, final_filename, phone_file_id, sess)
         print(broadcast)

@@ -287,7 +287,13 @@ def upload_contact_list(category):
         phone_file.write("First Name,Last Name,Notes,Phone Number\n")
         # https://newbedev.com/using-boto3-in-python-to-acquire-results-from-dynamodb-and-parse-into-a-usable-variable-or-dictionary
         for i in data:
-            contact = ast.literal_eval((json.dumps(i)))
+            #try:
+            #    contact = ast.literal_eval((json.dumps(i)))
+            #except ValueError:
+            #    logging.exception(f"Could not parse contact info: {i}")
+            #    continue
+            contact = {}
+
             print(contact)
             if 'e' in contact[category]:
                 email_file.write(f"{contact.get('email')}\n")

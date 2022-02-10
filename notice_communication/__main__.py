@@ -66,8 +66,8 @@ def send_telephony(summary, category, title, url, filename, sms_file_id, phone_f
     from pydub import AudioSegment
 
     sess = OAuth1Session(os.getenv('TEXT_EM_ALL_ID'),
-                         client_secret=os.getenv('TEXT_EM_ALL_SECRET'),
-                         resource_owner_key=os.getenv('TEXT_EM_ALL_TOKEN'))
+                        client_secret=os.getenv('TEXT_EM_ALL_SECRET'),
+                        resource_owner_key=os.getenv('TEXT_EM_ALL_TOKEN'))
 
     audio = generate_tts(summary)
 
@@ -92,15 +92,15 @@ def send_telephony(summary, category, title, url, filename, sms_file_id, phone_f
     print(broadcast)
 
 def update_contact_list(category):
-   headers = {"Origin": "https://bugalert.org"}
-   payload = {"category": category,
-              "email": "nobody@example.com",
-              "api_key": os.getenv('API_KEY')} # email field required on API validation rules
-   response = requests.post(f"https://{SUBSCRIPTIONS_API_BASE_DOMAIN}/listup", headers=headers, json=payload)
-   response.raise_for_status()
-   response_dict = response.json()
+    headers = {"Origin": "https://bugalert.org"}
+    payload = {"category": category,
+                "email": "nobody@example.com",
+                "api_key": os.getenv('API_KEY')} # email field required on API validation rules
+    response = requests.post(f"https://{SUBSCRIPTIONS_API_BASE_DOMAIN}/listup", headers=headers, json=payload)
+    response.raise_for_status()
+    response_dict = response.json()
 
-   return response_dict.get('email_file_id'), response_dict.get('sms_file_id'), response_dict.get('phone_file_id')
+    return response_dict.get('email_file_id'), response_dict.get('sms_file_id'), response_dict.get('phone_file_id')
 
 def generate_tts(summary):
     # Instantiates a client
@@ -168,11 +168,11 @@ def upload_audio(filename, sess):
     url = f"https://{TEXTEMALL_BASE_DOMAIN}/v1/audio/{filename}"
     payload={}
     files=[
-      ('File',(filename,open(filename,'rb'),'audio/mpeg'))
+        ('File',(filename,open(filename,'rb'),'audio/mpeg'))
     ]
     headers = {
-      'Accept': 'application/json',
-      'Content-Type': 'audio/mpeg',
+        'Accept': 'application/json',
+        'Content-Type': 'audio/mpeg',
     }
 
     response = sess.post(url, headers=headers, data=payload, files=files)

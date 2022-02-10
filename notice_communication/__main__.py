@@ -28,18 +28,22 @@ def main():
         os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = '/tmp/gcp.key'
 
     filename = sys.argv[1]
-    summary, category, title, slug = get_content_meta(filename)
+    summary, category, title, slug, tags = get_content_meta(filename)
     url = f"https://bugalert.org/{filename.replace('md', 'html')}"
+    if os.getenv('TWITTER_BEARER_TOKEN'):
+        twitter = get_twitter_client()
+        tweet_summary = summary[:220] if len(summary) > 220 else summary
+        ellipsis = "..." if len(summary) > 220 else ""
+        hashtag = "#BugAlertNews" if category == "bug_alert_news" else "#BugAlertNotice"
+        tweet = f"{f'{tweet_summary}{ellipsis}'} {url} {hashtag}"
+        twitter.create_tweet(text=tweet)
+
+    if category == "bug_alert_news":
+        return
 
     # Send Telegram
     if os.getenv('TELEGRAM_API_KEY'):
         send_telegram(summary, category, title, url)
-
-    if os.getenv('TWITTER_BEARER_TOKEN'):
-        twitter = get_twitter_client()
-        tweet_summary = summary[:220] if len(summary) > 220 else summary
-        tweet = f"{f'{tweet_summary}...'} {url} #BugAlertNotice"
-        twitter.create_tweet(text=tweet)
 
     if os.getenv('SENDGRID_API_KEY') or os.getenv('TEXT_EM_ALL_ID'):
         email_file_id, sms_file_id, phone_file_id = update_contact_list(category)
@@ -47,7 +51,7 @@ def main():
             create_email_broadcast(summary, category, title, url, os.path.basename(filename), email_file_id)
 
         if os.getenv('TEXT_EM_ALL_ID'):
-            send_telephony(summary, category, title, url, filename, sms_file_id, phone_file_id)
+            send_telephony(summary, category, title, tags, url, filename, sms_file_id, phone_file_id)
 
     print("Operations complete.")
 
@@ -60,7 +64,7 @@ def send_telegram(summary, category, title, url):
     response.raise_for_status()
     print(response.json())
 
-def send_telephony(summary, category, title, url, filename, sms_file_id, phone_file_id):
+def send_telephony(summary, category, title, tags, url, filename, sms_file_id, phone_file_id):
     # Dynamic import to avoid loading up ffmpeg early
     # or unnecessarily.
     from pydub import AudioSegment
@@ -83,13 +87,15 @@ def send_telephony(summary, category, title, url, filename, sms_file_id, phone_f
     final_filename = os.path.basename(filename) + ".mp3"
     final.export(final_filename, format="mp3")
 
-    msg = f"BugAlert: {summary} {url}"
+    msg = f"Bug Alert: {summary} {url}"
     broadcast = create_sms_broadcast(msg, os.path.basename(filename), sms_file_id, sess)
     print(broadcast)
 
-    audio_id = upload_audio(final_filename, sess)
-    broadcast = create_phone_broadcast(audio_id, final_filename, phone_file_id, sess)
-    print(broadcast)
+    # Only phone call for critical severity 
+    if 'critical severity' in tags.lower():
+        audio_id = upload_audio(final_filename, sess)
+        broadcast = create_phone_broadcast(audio_id, final_filename, phone_file_id, sess)
+        print(broadcast)
 
 def update_contact_list(category):
     headers = {"Origin": "https://bugalert.org"}
@@ -148,12 +154,17 @@ def get_content_meta(filename):
     groups = re.search(pattern, notice)
     slug = groups.group(1)
 
+    pattern = "Tags: (.*)"
+    groups = re.search(pattern, notice)
+    tags = groups.group(1)
+
     category_keys = {
         "Software Frameworks, Libraries, and Components": "frameworks_libs_components",
         "Operating Systems": "operating_systems",
         "Services & System Applications": "services_system_applications",
         "End-User Applications": "end_user_applications",
-        "Test": "test"
+        "Test": "test",
+        "Bug Alert News": "bug_alert_news"
     }
     category = category_keys[category_verbose]
 
@@ -161,8 +172,9 @@ def get_content_meta(filename):
     print(title)
     print(category)
     print(slug)
+    print(tags)
 
-    return summary, category, title, slug
+    return summary, category, title, slug, tags
 
 def upload_audio(filename, sess):
     url = f"https://{TEXTEMALL_BASE_DOMAIN}/v1/audio/{filename}"

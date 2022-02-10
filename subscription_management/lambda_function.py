@@ -285,16 +285,25 @@ def upload_contact_list(category):
         email_file.write("Email\n")
         sms_file.write("First Name,Last Name,Notes,Phone Number\n")
         phone_file.write("First Name,Last Name,Notes,Phone Number\n")
-        # https://newbedev.com/using-boto3-in-python-to-acquire-results-from-dynamodb-and-parse-into-a-usable-variable-or-dictionary
         for i in data:
-            contact = ast.literal_eval((json.dumps(i)))
+            contact = {}
+            contact['email'] = i.get('email')
+            contact['end_user_applications'] = i.get('end_user_applications')
+            contact['services_system_applications'] = i.get('services_system_applications')
+            contact['test'] = i.get('test')
+            contact['frameworks_libs_components'] = i.get('frameworks_libs_components')
+            contact['operating_systems'] = i.get('operating_systems')
+            contact['webhook_url'] = i.get('webhook_url')
+            contact['phone_number'] = i.get('phone_number')
+            contact['phone_country_code'] = i.get('phone_country_code')
+
             print(contact)
-            if 'e' in contact[category]:
+            if category in contact and contact[category] and 'e' in contact[category]:
                 email_file.write(f"{contact.get('email')}\n")
-            if 's' in contact[category] and contact.get('phone_country_code') and contact.get('phone_number') and contact.get('phone_country_code') == 1:
+            if category in contact and contact[category] and's' in contact[category] and contact.get('phone_country_code') and contact.get('phone_number') and contact.get('phone_country_code') == 1:
                 # Text-Em-All seems to need dummy values for name&notes to not flip out
                 sms_file.write(f"Bugs,Allert,bugs.allert@example.com,1{contact.get('phone_number')}\n")
-            if 'p' in contact[category] and contact.get('phone_country_code') and contact.get('phone_number') and contact.get('phone_country_code') == 1:
+            if category in contact and contact[category] and'p' in contact[category] and contact.get('phone_country_code') and contact.get('phone_number') and contact.get('phone_country_code') == 1:
                 phone_file.write(f"Bugs,Allert,bugs.allert@example.com,1{contact.get('phone_number')}\n")
 
     # Now put them on telephony services

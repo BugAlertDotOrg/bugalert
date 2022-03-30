@@ -21,7 +21,8 @@ jobs:
         path: './bugalert-pelican/'
     - run: |
         cp ./bugalert-pelican/requirements.txt .
-        sudo apt-get update && sudo apt-get install python3-pip -y 
+        sudo apt-get update && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC sudo apt-get install tzdata python3-pip -y
+        export TZ=Etc/UTC
     - uses: nelsonjchen/gh-pages-pelican-action@0.1.10
       env:
         GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}

@@ -48,7 +48,7 @@ def main():
     if os.getenv('SENDGRID_API_KEY') or os.getenv('TEXT_EM_ALL_ID'):
         email_file_id, sms_file_id, phone_file_id = update_contact_list(category)
         if os.getenv('SENDGRID_API_KEY'):
-            create_email_broadcast(summary, category, title, url, os.path.basename(filename), email_file_id)
+            create_email_broadcast(summary, category, title, url, slug, os.path.basename(filename), email_file_id)
 
         if os.getenv('TEXT_EM_ALL_ID'):
             send_telephony(summary, category, title, tags, url, filename, sms_file_id, phone_file_id)
@@ -70,8 +70,8 @@ def send_telephony(summary, category, title, tags, url, filename, sms_file_id, p
     from pydub import AudioSegment
 
     sess = OAuth1Session(os.getenv('TEXT_EM_ALL_ID'),
-                         client_secret=os.getenv('TEXT_EM_ALL_SECRET'),
-                         resource_owner_key=os.getenv('TEXT_EM_ALL_TOKEN'))
+                        client_secret=os.getenv('TEXT_EM_ALL_SECRET'),
+                        resource_owner_key=os.getenv('TEXT_EM_ALL_TOKEN'))
 
     audio = generate_tts(summary)
 
@@ -98,15 +98,15 @@ def send_telephony(summary, category, title, tags, url, filename, sms_file_id, p
         print(broadcast)
 
 def update_contact_list(category):
-   headers = {"Origin": "https://bugalert.org"}
-   payload = {"category": category,
-              "email": "nobody@example.com",
-              "api_key": os.getenv('API_KEY')} # email field required on API validation rules
-   response = requests.post(f"https://{SUBSCRIPTIONS_API_BASE_DOMAIN}/listup", headers=headers, json=payload)
-   response.raise_for_status()
-   response_dict = response.json()
+    headers = {"Origin": "https://bugalert.org"}
+    payload = {"category": category,
+                "email": "nobody@example.com",
+                "api_key": os.getenv('API_KEY')} # email field required on API validation rules
+    response = requests.post(f"https://{SUBSCRIPTIONS_API_BASE_DOMAIN}/listup", headers=headers, json=payload)
+    response.raise_for_status()
+    response_dict = response.json()
 
-   return response_dict.get('email_file_id'), response_dict.get('sms_file_id'), response_dict.get('phone_file_id')
+    return response_dict.get('email_file_id'), response_dict.get('sms_file_id'), response_dict.get('phone_file_id')
 
 def generate_tts(summary):
     # Instantiates a client
@@ -180,11 +180,11 @@ def upload_audio(filename, sess):
     url = f"https://{TEXTEMALL_BASE_DOMAIN}/v1/audio/{filename}"
     payload={}
     files=[
-      ('File',(filename,open(filename,'rb'),'audio/mpeg'))
+        ('File',(filename,open(filename,'rb'),'audio/mpeg'))
     ]
     headers = {
-      'Accept': 'application/json',
-      'Content-Type': 'audio/mpeg',
+        'Accept': 'application/json',
+        'Content-Type': 'audio/mpeg',
     }
 
     response = sess.post(url, headers=headers, data=payload, files=files)
@@ -203,7 +203,7 @@ def create_sms_broadcast(msg, filename, sms_file_id, sess):
     response = sess.post(url, json=payload)
     return response.json()
 
-def create_email_broadcast(summary, category, title, url, filename, email_file_id):
+def create_email_broadcast(summary, category, title, url, slug, filename, email_file_id):
     sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
 
     # Give SendGrid a bit to process the contact list additions
@@ -216,7 +216,7 @@ def create_email_broadcast(summary, category, title, url, filename, email_file_i
         "email_config": {
             "subject": f"Bug Alert Notice: {title}",
             "generate_plain_content": True,
-            "html_content": html_template.replace("{title}", title).replace("{summary}", summary).replace("{url}", url),
+            "html_content": html_template.replace("{title}", title).replace("{summary}", summary).replace("{url}", url).replace("{slug}", slug),
             "custom_unsubscribe_url": "https://bugalert.org/content/pages/my-subscriptions.html",
             "sender_id": 2415793
         }

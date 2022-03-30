@@ -611,7 +611,7 @@ The Bug Alert team would like to inform you of a newly-reported vulnerability, <
  <br /><br />
 <strong>Summary:</strong><br />{summary}
 <br /><br />
-<strong>Next steps:</strong><br>Visit <a clicktracking="off" href="{url}">{url}</a> for up-to-date vulnerability details. <a clicktracking="off" href="https://github.com/sullivanmatt/bugalert/pulls?q=is%3Apr+in%3Atitle+log4j">Discussion can be found on GitHub.</a>
+<strong>Next steps:</strong><br>Visit <a clicktracking="off" href="{url}">{url}</a> for up-to-date vulnerability details. <a clicktracking="off" href="https://github.com/sullivanmatt/bugalert/pulls?q=is%3Apr+in%3Atitle+{slug}">Discussion can be found on GitHub.</a>
 <br /><br /><br />
 <small>Finally:<br />If this notice was valuable to you, consider donating to help cover the costs of infrastructure and telephony services. <a href="https://bugalert.org/content/pages/financial-support.html">More information can be found here.</a></small>
 

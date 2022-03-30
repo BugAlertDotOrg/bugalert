@@ -48,7 +48,7 @@ def main():
     if os.getenv('SENDGRID_API_KEY') or os.getenv('TEXT_EM_ALL_ID'):
         email_file_id, sms_file_id, phone_file_id = update_contact_list(category)
         if os.getenv('SENDGRID_API_KEY'):
-            create_email_broadcast(summary, category, title, url, os.path.basename(filename), email_file_id)
+            create_email_broadcast(summary, category, title, url, slug, os.path.basename(filename), email_file_id)
 
         if os.getenv('TEXT_EM_ALL_ID'):
             send_telephony(summary, category, title, tags, url, filename, sms_file_id, phone_file_id)
@@ -203,7 +203,7 @@ def create_sms_broadcast(msg, filename, sms_file_id, sess):
     response = sess.post(url, json=payload)
     return response.json()
 
-def create_email_broadcast(summary, category, title, url, filename, email_file_id):
+def create_email_broadcast(summary, category, title, url, slug, filename, email_file_id):
     sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
 
     # Give SendGrid a bit to process the contact list additions
@@ -216,7 +216,7 @@ def create_email_broadcast(summary, category, title, url, filename, email_file_i
         "email_config": {
             "subject": f"Bug Alert Notice: {title}",
             "generate_plain_content": True,
-            "html_content": html_template.replace("{title}", title).replace("{summary}", summary).replace("{url}", url),
+            "html_content": html_template.replace("{title}", title).replace("{summary}", summary).replace("{url}", url).replace("{slug}", slug),
             "custom_unsubscribe_url": "https://bugalert.org/content/pages/my-subscriptions.html",
             "sender_id": 2415793
         }

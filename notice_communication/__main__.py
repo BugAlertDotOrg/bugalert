@@ -207,7 +207,7 @@ def create_email_broadcast(summary, category, title, url, slug, filename, email_
     sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
 
     # Give SendGrid a bit to process the contact list additions
-    send_date = datetime.datetime.utcnow() + datetime.timedelta(minutes=3)
+    send_date = datetime.datetime.utcnow() + datetime.timedelta(minutes=6)
     send_date = send_date.replace(microsecond=0).isoformat() + "Z"
     data = {
         "name": f"{filename}-{send_date}",

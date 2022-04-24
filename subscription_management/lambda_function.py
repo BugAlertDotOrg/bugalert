@@ -14,7 +14,6 @@ from datetime import datetime
 from requests_oauthlib import OAuth1Session
 from sendgrid import SendGridAPIClient
 from boto3.dynamodb.conditions import Key, Attr
-#from validate_email import validate_email  # there is some issue with importing this, disabling for now
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -102,16 +101,9 @@ def lambda_handler(event, context):
     if not email:
         return respond_error("No email field value", origin)
 
-    # Validate email
-    #valid = validate_email(email)
-    #if not valid:
-    #  # email is not valid, exception message is human-readable
-    #  return respond_error("Email field is not valid: '{}'".format(str(e)), origin)
-
     if method == 'POST' and path == 'listup':
         # RPC to dump the contact list from dynamo into telephony provider.
-        # A future improvement could be made to authenticate this, but for the moment,
-        # I don't forsee anyone DoS-ing this endpoint causing any harm.
+        # Call is protected from unathorized use by a simple PSK.
         if not os.getenv('API_KEY') or not body.get('api_key'):
             return respond_error("API key not set or sent.", origin)
 
@@ -233,25 +225,12 @@ def lambda_handler(event, context):
             if body.get(category) and 'p' in body.get(category):
                 phone_opted_in = True
 
-        #if sms_opted_in and phone_country_code == 1 and phone_number:
-        #    send_sms_confirmation(phone_number)
-
-        #if phone_opted_in and phone_country_code == 1 and phone_number:
-        #    send_phone_confirmation(phone_number)
         if (sms_opted_in or phone_opted_in) and phone_country_code == 1 and phone_number:
             send_telephony_confirmation(phone_number)
 
         return respond_success({"status": "success"}, origin)
 
     return respond_error(f"Unsupported method {method}", origin, status=405)
-
-#def send_sms_confirmation(phone_number):
-#    conversation_id = make_conversation(phone_number)
-#    send_message(conversation_id, "Bug Alert: you are opted in to SMS-based notices. Visit https://bugalert.org/content/pages/my-subscriptions.html to manage notice subscriptions.")
-
-#def send_phone_confirmation(phone_number):
-#    conversation_id = make_conversation(phone_number)
-#    send_message(conversation_id, "Bug Alert: you are opted in to phone-based notices. Please note that due to limitations with our telephony provider, calls will come from a different phone number, which you should save as a contact: +1 (507) 668-8567. Visit https://bugalert.org/content/pages/my-subscriptions.html to manage notice subscriptions.")
 
 def send_telephony_confirmation(phone_number):
     conversation_id = make_conversation(phone_number)

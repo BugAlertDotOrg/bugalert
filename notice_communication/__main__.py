@@ -35,7 +35,7 @@ def main():
         tweet_summary = summary[:220] if len(summary) > 220 else summary
         ellipsis = "..." if len(summary) > 220 else ""
         hashtag = "#BugAlertNews" if category == "bug_alert_news" else "#BugAlertNotice"
-        tweet = f"{f'{tweet_summary}{ellipsis}'} {url} {hashtag}"
+        tweet = f"{f'{tweet_summary}{ellipsis}'} {url}?src=tw {hashtag}"
         twitter.create_tweet(text=tweet)
 
     if category == "bug_alert_news":
@@ -58,7 +58,7 @@ def main():
 def send_telegram(summary, category, title, url):
     TELEGRAM_API_KEY = os.getenv('TELEGRAM_API_KEY')
     TG_CHAT_ID = "@BugAlert"
-    msg = f"{title}: {summary}\n{url}"
+    msg = f"{title}: {summary}\n{url}?src=tg"
     url_to_send = f"https://api.telegram.org/bot{TELEGRAM_API_KEY}/sendMessage?chat_id={TG_CHAT_ID}&text={msg}"
     response = requests.get(url_to_send)
     response.raise_for_status()
@@ -87,7 +87,7 @@ def send_telephony(summary, category, title, tags, url, filename, sms_file_id, p
     final_filename = os.path.basename(filename) + ".mp3"
     final.export(final_filename, format="mp3")
 
-    msg = f"Bug Alert: {summary} {url}"
+    msg = f"Bug Alert: {summary} {url}?src=s"
     broadcast = create_sms_broadcast(msg, os.path.basename(filename), sms_file_id, sess)
     print(broadcast)
 
@@ -209,6 +209,7 @@ def create_email_broadcast(summary, category, title, url, slug, filename, email_
     # Give SendGrid a bit to process the contact list additions
     send_date = datetime.datetime.utcnow() + datetime.timedelta(minutes=6)
     send_date = send_date.replace(microsecond=0).isoformat() + "Z"
+    url = url + '?src=e'
     data = {
         "name": f"{filename}-{send_date}",
         "send_at": send_date,

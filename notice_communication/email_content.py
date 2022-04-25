@@ -611,9 +611,9 @@ The Bug Alert team would like to inform you of a newly-reported vulnerability, <
  <br /><br />
 <strong>Summary:</strong><br />{summary}
 <br /><br />
-<strong>Next steps:</strong><br>Visit <a clicktracking="off" href="{url}">{url}</a> for up-to-date vulnerability details. <a clicktracking="off" href="https://github.com/sullivanmatt/bugalert/pulls?q=is%3Apr+in%3Atitle+{slug}">Discussion can be found on GitHub.</a>
+<strong>Next steps:</strong><br>Visit <a clicktracking="off" href="{url}">{url}?src=e</a> for up-to-date vulnerability details. <a clicktracking="off" href="https://github.com/sullivanmatt/bugalert/pulls?q=is%3Apr+in%3Atitle+{slug}">Discussion can be found on GitHub.</a>
 <br /><br /><br />
-<small>Finally:<br />If this notice was valuable to you, consider donating to help cover the costs of infrastructure and telephony services. <a href="https://bugalert.org/content/pages/financial-support.html">More information can be found here.</a></small>
+<small>Finally:<br />If this notice was valuable to you, consider donating to help cover the costs of infrastructure and telephony services. <a clicktracking="off" href="https://bugalert.org/content/pages/financial-support.html?src=e">More information can be found here.</a></small>
 
           <!--[if (!mso 9)&(!mso 14) ]></span><![endif]-->
           </td>
@@ -634,7 +634,7 @@ The Bug Alert team would like to inform you of a newly-reported vulnerability, <
 
 
    
-    This notice, which you have previously signed up for, has been provided by Bug Alert.<br><a clicktracking="off" href="https://bugalert.org/content/pages/my-subscriptions.html">Click here to manage your subscriptions or unsubscribe.</a>
+    This notice, which you have previously signed up for, has been provided by Bug Alert.<br><a clicktracking="off" href="https://bugalert.org/content/pages/my-subscriptions.html?src=e">Click here to manage your subscriptions or unsubscribe.</a>
    <br /><br />
 
 

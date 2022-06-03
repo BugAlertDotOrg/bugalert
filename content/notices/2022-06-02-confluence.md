@@ -15,11 +15,11 @@ At this time, Atlassian is advising customers to remove Confluence Server and Da
 
 This vulnerability been assigned CVE-2022-26134. Patches are not yet available from the vendor. This notice will be updated when they are published.
 
-##Update as of May 2nd, 10:00PM New York time
+##Update as of June 2nd, 10:00PM New York time
 
 Cybersecurity firm Volexity has [published a blog post](https://www.volexity.com/blog/2022/06/02/zero-day-exploitation-of-atlassian-confluence/) detailing how they originally found this vulnerability being used in the wild, prior to reporting it to Atlassian. Their write-up includes IP ranges the attackers utilized, as well as some additional background information.
 
-The United States Cybersecurity & Infrastructure Security Agency (CISA) has added this flaw to its list of [known exploited vulnerabilities](https://www.cisa.gov/known-exploited-vulnerabilities-catalog) with a deadline for remediation of Friday, May 3rd, 2022.
+The United States Cybersecurity & Infrastructure Security Agency (CISA) has added this flaw to its list of [known exploited vulnerabilities](https://www.cisa.gov/known-exploited-vulnerabilities-catalog) with a deadline for remediation of Friday, June 3rd, 2022.
 
 As of this update, there is still no patch available. Confluence administrators are urged to remove public-facing installations from the Internet as soon as possible.
 

@@ -13,7 +13,7 @@ Once a patch has been made available, it's likely that additional attackers will
 
 At this time, Atlassian is advising customers to remove Confluence Server and Data Center from being available from the Internet, either by shutting them down, or by firewalling them off.
 
-This vulnerability been assigned CVE-2022-26134. Patches are not yet available from the vendor. This notice will be updated when they are published.
+This vulnerability been assigned CVE-2022-26134. ~~Patches are not yet available from the vendor~~ (see last update for patch links). This notice will be updated when they are published.
 
 ## Update as of June 2nd, 10:00PM New York time
 

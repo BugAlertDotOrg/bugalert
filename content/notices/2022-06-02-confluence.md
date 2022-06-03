@@ -23,7 +23,7 @@ The United States Cybersecurity & Infrastructure Security Agency (CISA) has adde
 
 ~~As of this update, there is still no patch available.~~ Confluence administrators are urged to remove public-facing installations from the Internet as soon as possible.
 
-## Update as of May 3rd, 2:30PM New York time
+## Update as of June 3rd, 2:30PM New York time
 
 **[Patches are now available from Atlassian.](https://www.atlassian.com/software/confluence/download-archives)**
 

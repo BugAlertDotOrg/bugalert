@@ -16,5 +16,6 @@ Platinum sponsors are credited with supporting the project in all email communic
 ### Major Financial Contributions ($100+)
 Every single donation is extremely appreciated! It would be very time-consuming to update the site crediting every contributor (especially since this project is run on volunteer time), but we want to highlight the following contributors for having made a major financial contribution in the past 12 months:
 
-* [Ellucian](http://ellucian.com/)
+* [Ellucian](https://ellucian.com/)
+* [Matthew Lorimor](https://m5wl5r.com/)
 * [PNT Data](https://www.pntdata.com/)

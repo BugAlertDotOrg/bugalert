@@ -11,7 +11,7 @@ On Wednesday, July 20th, 2022, [Atlassian released a Security Advisory](https://
 
 The hardcoded credential vulnerability stems from the use of the Questions for Confluence application with the `disabledsystemuser` account. The fix here is to update the Questions for Confluence app to a non-vulnerable version, or to disable/delete this account. **Uninstalling the Questions for Confluence application does not remediate this vulnerability.**
 
-To check for use of the `disabledsystemuser` account, follow instructions found (here.)[https://confluence.atlassian.com/confkb/how-to-get-a-list-of-users-with-their-last-logon-times-985499701.html]
+To check for use of the `disabledsystemuser` account, follow instructions found [here.](https://confluence.atlassian.com/confkb/how-to-get-a-list-of-users-with-their-last-logon-times-985499701.html)
 
 At this time they have not released any specifics as to what the exact vulnerable endpoint is for the servlet bypasses, or any indicators of compromise that could lead defenders to believe they have been exploited. The current fix is to patch to the level indicated in the advisory.
 

@@ -1,0 +1,726 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="HandheldFriendly" content="True" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="index, follow" />
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:site" content="BugAlert.org" />
+  <meta name="twitter:image" content="https://bugalert.org/images/bug.png" />
+    <meta name="twitter:title" content="Bug Alert: My Subscriptions" />
+
+  <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:ital,wght@0,400;0,700;1,400&family=Source+Sans+Pro:ital,wght@0,300;0,400;0,700;1,400&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet/less" type="text/css" href="/theme/stylesheet/style.less">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/less.js/2.5.1/less.min.js" type="text/javascript"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js" integrity="sha512-2ImtlRlf2VVmiGZsjm9bEyhjGW4dU7B6TNwh/hx/iSByxNENtj3WVE6o/9Lj4TJeVXPi4bnOIMXFIJJAeufa0A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" integrity="sha512-nMNlpuaDPrqlEls3IX/Q56H36qvBASwb3ipuo3MxeWbsQB1881ox0cRv7UPTgBlriqoynt35KjEwgGUeUXIPnw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+  <script>
+      let SUBSCRIPTIONSURL = "https://subscriptions.bugalert.org";
+      let components = ["frameworks_libs_components", "operating_systems", "services_system_applications", "end_user_applications", "test"];
+      var subscription_email = null;
+      var subscription_signature = null;
+
+      location.queryString = {};
+      location.search.substr(1).split("&").forEach(function (pair) {
+          if (pair === "") return;
+          var parts = pair.split("=");
+          location.queryString[parts[0]] = parts[1];
+      });
+
+      // Numeric only control handler
+      jQuery.fn.ForceNumericOnly =
+      function()
+      {
+          return this.each(function()
+          {
+              $(this).keydown(function(e)
+              {
+                  var key = e.charCode || e.keyCode || 0;
+                  // allow backspace, tab, delete, enter, arrows, numbers and keypad numbers ONLY
+                  // home, end, period, and numpad decimal
+                  return (
+                      key == 8 || 
+                      key == 9 ||
+                      key == 13 ||
+                      key == 46 ||
+                      key == 110 ||
+                      key == 190 ||
+                      (key >= 35 && key <= 40) ||
+                      (key >= 48 && key <= 57) ||
+                      (key >= 96 && key <= 105));
+              });
+          });
+      };
+
+      $(document).ready(function() {
+          // Initialize select2
+          $("#select-country").select2();
+          $("#phone-number").ForceNumericOnly();
+
+          for (let i = 0; i < components.length; i++){
+              component = components[i];
+              //if ($('#' + component + '_email').is(":checked")) {
+              //    data[component] = data[component] + "e";
+              //}
+              $('#' + component + '_phone').on('change', {item: component + '_email'}, function(event) {
+                  if(this.checked) {
+                      $('#' + event.data.item).prop( "checked", true );
+                  }
+              });
+              $('#' + component + '_sms').on('change', {item: component + '_email'}, function(event) {
+                  if(this.checked) {
+                      $('#' + event.data.item).prop( "checked", true );
+                  }
+              });
+          }
+      });
+
+      $(window).on('load', function() {
+          var attempt_data_load = false;
+
+          if (location.queryString && location.queryString.email && location.queryString.signature) {
+              subscription_email = location.queryString.email;
+              subscription_signature = location.queryString.signature;
+              attempt_data_load = true;
+
+              // Keep in browser storage for future visits.
+              localStorage.setItem('subscription_email', subscription_email);
+              localStorage.setItem('subscription_signature', subscription_signature);
+          } else if ("subscription_email" in localStorage && "subscription_signature" in localStorage) {
+              subscription_email = localStorage.getItem('subscription_email');
+              subscription_signature = localStorage.getItem('subscription_signature');
+              attempt_data_load = true;
+          }
+
+          if (attempt_data_load) {
+              $('#verify-submit').html("Gathering information...");
+              localStorage.setItem('subscription_email', subscription_email);
+              localStorage.setItem('subscription_signature', subscription_signature);
+
+              $.ajax({
+                 type: "POST",
+                 url: SUBSCRIPTIONSURL + "/return",
+                 data: JSON.stringify({ "email": subscription_email, "signature": subscription_signature }),
+                 contentType: "application/json; charset=utf-8",
+                 crossDomain: true,
+                 dataType: "json",
+                 success: function (data, status, jqXHR) {
+                     load_subscription_selections(data);
+                 },
+
+                 error: function (jqXHR, status) {
+                     // error handler
+                     if(jqXHR.status === 404) {
+                         console.log("No existing subscriptions found for this email.");
+                         load_subscription_selections(null);
+                     }
+                     else {
+                         $('#verify-submit').html("<p><strong>Uh oh!</strong><br>There is something wrong with your magic link (an error was returned from our API). If you continue to have issues, let us know by opening an issue on GitHub.</p><br><br>");
+                     }
+                 }
+              });
+          }
+      });
+
+      function submit_subscription_verify() {
+          $.ajax({
+              type: "POST",
+              url: SUBSCRIPTIONSURL + "/verify",
+              data: JSON.stringify({ "email": $('#email').val() }),
+              contentType: "application/json; charset=utf-8",
+              crossDomain: true,
+              dataType: "json",
+              success: function (data, status, jqXHR) {
+                  $('#verify-submit').html("<p><em>Success! Close this tab and check your email.</em></p><br><br>")
+              },
+
+              error: function (jqXHR, status) {
+                  // error handler
+                  console.log(jqXHR);
+                  $('#verify-submit').html("<p><strong>Uh oh!</strong><br>Your email address was not accepted. Ensure the domain exists and is typed correctly. If you continue to have issues, let us know by opening an issue on GitHub.</p><br><br>")
+              }
+          });
+      }
+
+      function submit_subscription_preferences() {
+          var data = {
+            "email": subscription_email,
+            "signature": subscription_signature,
+            "phone_country_code": $('#select-country').val(),
+            "phone_number": $('#phone-number').val(),
+            "webhook_url": $('#webhook-url').val()
+          }
+
+          for (let i = 0; i < components.length; i++){
+              component = components[i];
+              data[component] = "";
+
+              if ($('#' + component + '_email').is(":checked")) {
+                  data[component] = data[component] + "e";
+              }
+              if ($('#' + component + '_phone').is(":checked")) {
+                  data[component] = data[component] + "p";
+              }
+              if ($('#' + component + '_sms').is(":checked")) {
+                  data[component] = data[component] + "s";
+              }
+              if ($('#' + component + '_webhook').is(":checked")) {
+                  data[component] = data[component] + "w";
+              }
+
+              if (data[component] === "") {
+                  data[component] = null;
+              }
+          }
+
+          $.ajax({
+              type: "POST",
+              url: SUBSCRIPTIONSURL + "/update",
+              data: JSON.stringify(data),
+              contentType: "application/json; charset=utf-8",
+              crossDomain: true,
+              dataType: "json",
+              success: function (data, status, jqXHR) {
+                  $('#manage-subscriptions').html("<p><em>Success! Your subscriptions have been updated.</em></p><br><br>")
+              },
+
+              error: function (jqXHR, status) {
+                  // error handler
+                  console.log(jqXHR);
+                  $('#manage-subscriptions').html("<p><strong>Uh oh!</strong><br>Your subscription updates were not saved due to an unexpected error. If you continue to have issues, let us know by opening an issue on GitHub.</p><br><br>")
+              }
+         });
+      }
+
+      function load_subscription_selections(data) {
+          $('#verify-submit').hide();
+          $('#manage-subscriptions').show();
+
+          $('#email').html(subscription_email);
+
+          // If no data, we have nothing to pre-fill/pre-check.
+          if (data === null) {
+              return;
+          }
+
+          if (data.phone_country_code && data.phone_number) {
+              $('#select-country').val(data.phone_country_code).change();
+              $('#phone-number').val(data.phone_number);
+              $('#webhook-url').val(data.webhook_url);
+          }
+
+          for (let i = 0; i < components.length; i++){
+              component = components[i];
+              if (data[component] && data[component].includes('e')) { 
+                  $('#' + component + '_email').prop( "checked", true );
+              }
+              if (data[component] && data[component].includes('p')) {
+                  $('#' + component + '_phone').prop( "checked", true );
+              }
+              if (data[component] && data[component].includes('s')) {
+                  $('#' + component + '_sms').prop( "checked", true );
+              }
+              if (data[component] && data[component].includes('w')) {
+                  $('#' + component + '_webhook').prop( "checked", true );
+              }
+          }
+      }
+  </script>
+
+    <link id="dark-theme-style" rel="stylesheet" type="text/css"
+          media="(prefers-color-scheme: dark)"
+    href="/theme/stylesheet/dark-theme.min.css">
+
+    <link id="pygments-dark-theme" rel="stylesheet" type="text/css"
+              media="(prefers-color-scheme: dark)"
+          href="/theme/pygments/monokai.min.css">
+    <link id="pygments-light-theme" rel="stylesheet" type="text/css"
+              media="(prefers-color-scheme: light), (prefers-color-scheme: no-preference)"
+          href="/theme/pygments/monokai.min.css">
+
+
+  <link rel="stylesheet" type="text/css" href="/theme/font-awesome/css/fontawesome.css">
+  <link rel="stylesheet" type="text/css" href="/theme/font-awesome/css/brands.css">
+  <link rel="stylesheet" type="text/css" href="/theme/font-awesome/css/solid.css">
+
+
+    <link href="https://bugalert.org/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="Bug Alert Atom">
+
+
+    <link rel="shortcut icon" href="/images/bug.svg" type="image/x-icon">
+    <link rel="icon" href="/images/bug.svg" type="image/x-icon">
+
+
+    <!-- Chrome, Firefox OS and Opera -->
+    <meta name="theme-color" content="#333333">
+    <!-- Windows Phone -->
+    <meta name="msapplication-navbutton-color" content="#333333">
+    <!-- iOS Safari -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- Microsoft EDGE -->
+    <meta name="msapplication-TileColor" content="#333333">
+
+    <meta name="author" content="Bug Alert Contributors" />
+    <meta name="description" content="A nonprofit service for alerting security and IT professionals of high-impact and 0day vulnerabilities." />
+<meta property="og:site_name" content="Bug Alert"/>
+<meta property="og:type" content="blog"/>
+<meta property="og:title" content="Bug Alert"/>
+<meta property="og:description" content="A nonprofit service for alerting security and IT professionals of high-impact and 0day vulnerabilities."/>
+<meta property="og:locale" content="en_US"/>
+<meta property="og:url" content="https://bugalert.org"/>
+<meta property="og:image" content="/images/bug.svg">
+
+
+
+  <title>Bug Alert &ndash; My Subscriptions</title>
+
+</head>
+<body >
+  <aside>
+    <div>
+      <a href="https://bugalert.org">
+        <img style="width:140px; height:140px;" src="/images/bug.svg" alt="Bug Alert" title="Bug Alert">
+      </a>
+
+      <h1>
+        <a href="https://bugalert.org">Bug Alert</a>
+      </h1>
+
+<p>A nonprofit service for alerting security and IT professionals of high-impact and 0day vulnerabilities.</p>
+
+      <nav>
+        <ul class="list">
+
+
+
+        </ul>
+      </nav>
+
+      <ul class="social">
+          <li>
+            <a  class="sc-github" href="https://github.com/sullivanmatt/bugalert" target="_blank">
+              <i class="fab fa-github"></i>
+            </a>
+          </li>
+          <li>
+            <a  class="sc-twitter" href="https://twitter.com/BugAlertDotOrg" target="_blank">
+              <i class="fab fa-twitter"></i>
+            </a>
+          </li>
+          <li>
+            <a  class="sc-telegram" href="https://t.me/s/BugAlert" target="_blank">
+              <i class="fab fa-telegram"></i>
+            </a>
+          </li>
+          <li>
+            <a  class="sc-rss" href="/content/pages/atom.html" target="_blank">
+              <i class="fas fa-rss"></i>
+            </a>
+          </li>
+      </ul>
+      <br>
+      <small><a href="/content/pages/privacy-policy.html">Privacy Policy</a>&nbsp;&nbsp;&#8226;&nbsp;&nbsp;<a href="/content/pages/financial-support.html">Financial Support</a></small>
+    </div>
+
+  </aside>
+  <main>
+
+    <nav>
+      <a href="/">Home</a>
+
+      <a class=" " href="/content/pages/about.html">About</a>
+      <a class=" " href="/content/pages/my-subscriptions.html">My Subscriptions</a>
+      <a class="nomobile " href="/categories.html">Categories</a>
+      <a class="nomobile " href="/tags.html">Tags</a>
+      <a class="nomobile " href="/content/pages/atom.html">Atom (RSS)</a>
+    </nav>
+
+<article class="single">
+  <header>
+    
+    <h1 id="my-subscriptions">My Subscriptions</h1>
+  </header>
+  <div>
+
+<h4>Bug Alert notices can be delivered to you by email, phone call, or SMS.</h4>
+<div id="verify-submit">
+    <p>Before you can manage your notice subscriptions, please verify your email address.
+    After you've submitted, you can close this tab and head over to your email inbox.</p>
+    <div>
+        <input type="text" placeholder="nobody@example.com" style="height:30px; width:250px; padding-left: 8px;" id="email"> <input style="height:36px; width:100px; padding-left: 15px; text-align: left; font-weight:bold;" type="button" value="Verify" onclick="submit_subscription_verify()" />
+        <i class="fa fa-user-check" style="position: relative; z-index: 1; left: -40px; top: 1px; color: #7B7B7B; cursor:pointer; width: 0;"></i>
+    </div>
+</div>
+<div id="manage-subscriptions" style="display: none;">
+    <div class="ftralert ftralert-warning">
+        <i class="fa fa-info" style="font-size:24px;"></i>
+        <p>Only vulnerabilities that Bug Alert has rated as 'critical severity' will trigger a phone call,
+        and notices of 'high severity' or 'very high severity' issues <em>will not</em>.<br>
+        More information about the rating system can be found <a href="https://github.com/sullivanmatt/bugalert#assigning-severity" target="_blank">on our GitHub documentation</a>.</p>
+    </div>
+    <h4>Your Contact Information</h4>
+    <div id="email" style="font-size: 1.1em;">&nbsp;</div><br>
+    Country Code<br>
+    <!-- Dropdown --> 
+    <select required id="select-country" style="width: 400px;">
+    <option value="0" disabled selected value>Select Country Code (Phone Number Prefix)</option>
+    <option value="376">Andorra (+376)</option>
+    <option value="971">United Arab Emirates (+971)</option>
+    <option value="93">Afghanistan (+93)</option>
+    <option value="355">Albania (+355)</option>
+    <option value="374">Armenia (+374)</option>
+    <option value="244">Angola (+244)</option>
+    <option value="54">Argentina (+54)</option>
+    <option value="43">Austria (+43)</option>
+    <option value="61">Australia (+61)</option>
+    <option value="297">Aruba (+297)</option>
+    <option value="994">Azerbaijan (+994)</option>
+    <option value="387">Bosnia and Herzegovina (+387)</option>
+    <option value="880">Bangladesh (+880)</option>
+    <option value="32">Belgium (+32)</option>
+    <option value="226">Burkina Faso (+226)</option>
+    <option value="359">Bulgaria (+359)</option>
+    <option value="973">Bahrain (+973)</option>
+    <option value="257">Burundi (+257)</option>
+    <option value="229">Benin (+229)</option>
+    <option value="590">Saint Barthelemy (+590)</option>
+    <option value="673">Brunei (+673)</option>
+    <option value="591">Bolivia (+591)</option>
+    <option value="599">Bonaire, Saint Eustatius and Saba (+599)</option>
+    <option value="55">Brazil (+55)</option>
+    <option value="975">Bhutan (+975)</option>
+    <option value="267">Botswana (+267)</option>
+    <option value="375">Belarus (+375)</option>
+    <option value="501">Belize (+501)</option>
+    <option value="61">Cocos Islands (+61)</option>
+    <option value="243">Democratic Republic of the Congo (+243)</option>
+    <option value="236">Central African Republic (+236)</option>
+    <option value="242">Republic of the Congo (+242)</option>
+    <option value="41">Switzerland (+41)</option>
+    <option value="225">Ivory Coast (+225)</option>
+    <option value="682">Cook Islands (+682)</option>
+    <option value="56">Chile (+56)</option>
+    <option value="237">Cameroon (+237)</option>
+    <option value="86">China (+86)</option>
+    <option value="57">Colombia (+57)</option>
+    <option value="506">Costa Rica (+506)</option>
+    <option value="53">Cuba (+53)</option>
+    <option value="238">Cape Verde (+238)</option>
+    <option value="599">Curacao (+599)</option>
+    <option value="61">Christmas Island (+61)</option>
+    <option value="357">Cyprus (+357)</option>
+    <option value="420">Czech Republic (+420)</option>
+    <option value="49">Germany (+49)</option>
+    <option value="253">Djibouti (+253)</option>
+    <option value="45">Denmark (+45)</option>
+    <option value="213">Algeria (+213)</option>
+    <option value="593">Ecuador (+593)</option>
+    <option value="372">Estonia (+372)</option>
+    <option value="20">Egypt (+20)</option>
+    <option value="212">Western Sahara (+212)</option>
+    <option value="291">Eritrea (+291)</option>
+    <option value="34">Spain (+34)</option>
+    <option value="251">Ethiopia (+251)</option>
+    <option value="358">Finland (+358)</option>
+    <option value="679">Fiji (+679)</option>
+    <option value="500">Falkland Islands (+500)</option>
+    <option value="691">Micronesia (+691)</option>
+    <option value="298">Faroe Islands (+298)</option>
+    <option value="33">France (+33)</option>
+    <option value="241">Gabon (+241)</option>
+    <option value="44">United Kingdom (+44)</option>
+    <option value="995">Georgia (+995)</option>
+    <option value="594">French Guiana (+594)</option>
+    <option value="233">Ghana (+233)</option>
+    <option value="350">Gibraltar (+350)</option>
+    <option value="299">Greenland (+299)</option>
+    <option value="220">Gambia (+220)</option>
+    <option value="224">Guinea (+224)</option>
+    <option value="590">Guadeloupe (+590)</option>
+    <option value="240">Equatorial Guinea (+240)</option>
+    <option value="30">Greece (+30)</option>
+    <option value="502">Guatemala (+502)</option>
+    <option value="245">Guinea-Bissau (+245)</option>
+    <option value="592">Guyana (+592)</option>
+    <option value="852">Hong Kong (+852)</option>
+    <option value="504">Honduras (+504)</option>
+    <option value="385">Croatia (+385)</option>
+    <option value="509">Haiti (+509)</option>
+    <option value="36">Hungary (+36)</option>
+    <option value="62">Indonesia (+62)</option>
+    <option value="353">Ireland (+353)</option>
+    <option value="972">Israel (+972)</option>
+    <option value="91">India (+91)</option>
+    <option value="246">British Indian Ocean Territory (+246)</option>
+    <option value="964">Iraq (+964)</option>
+    <option value="98">Iran (+98)</option>
+    <option value="354">Iceland (+354)</option>
+    <option value="39">Italy (+39)</option>
+    <option value="962">Jordan (+962)</option>
+    <option value="81">Japan (+81)</option>
+    <option value="254">Kenya (+254)</option>
+    <option value="996">Kyrgyzstan (+996)</option>
+    <option value="855">Cambodia (+855)</option>
+    <option value="686">Kiribati (+686)</option>
+    <option value="269">Comoros (+269)</option>
+    <option value="850">North Korea (+850)</option>
+    <option value="82">South Korea (+82)</option>
+    <option value="965">Kuwait (+965)</option>
+    <option value="7">Kazakhstan (+7)</option>
+    <option value="856">Laos (+856)</option>
+    <option value="961">Lebanon (+961)</option>
+    <option value="423">Liechtenstein (+423)</option>
+    <option value="94">Sri Lanka (+94)</option>
+    <option value="231">Liberia (+231)</option>
+    <option value="266">Lesotho (+266)</option>
+    <option value="370">Lithuania (+370)</option>
+    <option value="352">Luxembourg (+352)</option>
+    <option value="371">Latvia (+371)</option>
+    <option value="218">Libya (+218)</option>
+    <option value="212">Morocco (+212)</option>
+    <option value="377">Monaco (+377)</option>
+    <option value="373">Moldova (+373)</option>
+    <option value="382">Montenegro (+382)</option>
+    <option value="590">Saint Martin (+590)</option>
+    <option value="261">Madagascar (+261)</option>
+    <option value="692">Marshall Islands (+692)</option>
+    <option value="389">Macedonia (+389)</option>
+    <option value="223">Mali (+223)</option>
+    <option value="95">Myanmar (+95)</option>
+    <option value="976">Mongolia (+976)</option>
+    <option value="853">Macao (+853)</option>
+    <option value="596">Martinique (+596)</option>
+    <option value="222">Mauritania (+222)</option>
+    <option value="356">Malta (+356)</option>
+    <option value="230">Mauritius (+230)</option>
+    <option value="960">Maldives (+960)</option>
+    <option value="265">Malawi (+265)</option>
+    <option value="52">Mexico (+52)</option>
+    <option value="60">Malaysia (+60)</option>
+    <option value="258">Mozambique (+258)</option>
+    <option value="264">Namibia (+264)</option>
+    <option value="687">New Caledonia (+687)</option>
+    <option value="227">Niger (+227)</option>
+    <option value="672">Norfolk Island (+672)</option>
+    <option value="234">Nigeria (+234)</option>
+    <option value="505">Nicaragua (+505)</option>
+    <option value="31">Netherlands (+31)</option>
+    <option value="47">Norway (+47)</option>
+    <option value="977">Nepal (+977)</option>
+    <option value="674">Nauru (+674)</option>
+    <option value="683">Niue (+683)</option>
+    <option value="64">New Zealand (+64)</option>
+    <option value="968">Oman (+968)</option>
+    <option value="507">Panama (+507)</option>
+    <option value="51">Peru (+51)</option>
+    <option value="689">French Polynesia (+689)</option>
+    <option value="675">Papua New Guinea (+675)</option>
+    <option value="63">Philippines (+63)</option>
+    <option value="92">Pakistan (+92)</option>
+    <option value="48">Poland (+48)</option>
+    <option value="508">Saint Pierre and Miquelon (+508)</option>
+    <option value="870">Pitcairn (+870)</option>
+    <option value="970">Palestinian Territory (+970)</option>
+    <option value="351">Portugal (+351)</option>
+    <option value="680">Palau (+680)</option>
+    <option value="595">Paraguay (+595)</option>
+    <option value="974">Qatar (+974)</option>
+    <option value="262">Reunion (+262)</option>
+    <option value="40">Romania (+40)</option>
+    <option value="381">Serbia (+381)</option>
+    <option value="7">Russia (+7)</option>
+    <option value="250">Rwanda (+250)</option>
+    <option value="966">Saudi Arabia (+966)</option>
+    <option value="677">Solomon Islands (+677)</option>
+    <option value="248">Seychelles (+248)</option>
+    <option value="249">Sudan (+249)</option>
+    <option value="46">Sweden (+46)</option>
+    <option value="65">Singapore (+65)</option>
+    <option value="290">Saint Helena (+290)</option>
+    <option value="386">Slovenia (+386)</option>
+    <option value="47">Svalbard and Jan Mayen (+47)</option>
+    <option value="421">Slovakia (+421)</option>
+    <option value="232">Sierra Leone (+232)</option>
+    <option value="378">San Marino (+378)</option>
+    <option value="221">Senegal (+221)</option>
+    <option value="252">Somalia (+252)</option>
+    <option value="597">Suriname (+597)</option>
+    <option value="211">South Sudan (+211)</option>
+    <option value="239">Sao Tome and Principe (+239)</option>
+    <option value="503">El Salvador (+503)</option>
+    <option value="599">Sint Maarten (+599)</option>
+    <option value="963">Syria (+963)</option>
+    <option value="268">Swaziland (+268)</option>
+    <option value="235">Chad (+235)</option>
+    <option value="228">Togo (+228)</option>
+    <option value="66">Thailand (+66)</option>
+    <option value="992">Tajikistan (+992)</option>
+    <option value="690">Tokelau (+690)</option>
+    <option value="670">East Timor (+670)</option>
+    <option value="993">Turkmenistan (+993)</option>
+    <option value="216">Tunisia (+216)</option>
+    <option value="676">Tonga (+676)</option>
+    <option value="90">Turkey (+90)</option>
+    <option value="688">Tuvalu (+688)</option>
+    <option value="886">Taiwan (+886)</option>
+    <option value="255">Tanzania (+255)</option>
+    <option value="380">Ukraine (+380)</option>
+    <option value="256">Uganda (+256)</option>
+    <option value="1">United States and Canada (+1)</option>
+    <option value="598">Uruguay (+598)</option>
+    <option value="998">Uzbekistan (+998)</option>
+    <option value="379">Vatican (+379)</option>
+    <option value="58">Venezuela (+58)</option>
+    <option value="84">Vietnam (+84)</option>
+    <option value="678">Vanuatu (+678)</option>
+    <option value="681">Wallis and Futuna (+681)</option>
+    <option value="685">Samoa (+685)</option>
+    <option value="967">Yemen (+967)</option>
+    <option value="262">Mayotte (+262)</option>
+    <option value="27">South Africa (+27)</option>
+    <option value="260">Zambia (+260)</option>
+    <option value="263">Zimbabwe (+263)</option>
+    </select>
+    <br><br>
+    Phone Number<br>
+    <input id="phone-number" type="text" style="width: 400px; padding-left: 8px; color: #444; font-size: 1em" placeholder="Phone number (without country code, numbers only)"><br><br>
+    Webhook URL <a href="/content/pages/webhook-format.html">(view request format)</a><br><strong>Webhooks coming soon. You can configure and save, but webhooks are not yet triggered when notices are posted.</strong><br>
+    <input id="webhook-url" type="text" style="width: 400px; padding-left: 8px; color: #444; font-size: 1em" placeholder="https://example.com/bugalert-webhook/submit">
+    <br>
+
+    <table class="styled-table">
+        <thead>
+            <tr>
+                <th>&nbsp;</th>
+                <th>Email</th>
+                <th>SMS</th>
+                <th>Phone<br>Call</th>
+                <th>Web<br>Hook</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr class="">
+                <td class=""><strong>Software Frameworks, Libraries, and Components</strong><br><small>Most commonly used for open-source components.<br><em>Examples: Django, Flask, Rails, Angular, Spring Boot.</em></small></td>
+                <td><input type="checkbox" id="frameworks_libs_components_email"></td>
+                <td><input type="checkbox" id="frameworks_libs_components_sms"></td>
+                <td><input type="checkbox" id="frameworks_libs_components_phone"></td>
+                <td><input type="checkbox" id="frameworks_libs_components_webhook"></td>
+            </tr>
+            <tr class="">
+                <td class=""><strong>Operating Systems</strong><br><small>Kernel and native components of desktop, server, and mobile OSes.<br><em>Examples: Windows SMB, Linux Kernel, iMessage, Apple Darwin.</em></small></td>
+                <td><input type="checkbox" id="operating_systems_email"></td>
+                <td><input type="checkbox" id="operating_systems_sms"></td>
+                <td><input type="checkbox" id="operating_systems_phone"></td>
+                <td><input type="checkbox" id="operating_systems_webhook"></td>
+            </tr>
+            <tr class="">
+                <td class=""><strong>Services & System Applications</strong><br><small>Services not written by the OS vendor, core components, and language runtimes.<br><em>Examples: openssh, nodejs, nginx, Java, vim, curl, Python.</em></small></td>
+                <td><input type="checkbox" id="services_system_applications_email"></td>
+                <td><input type="checkbox" id="services_system_applications_sms"></td>
+                <td><input type="checkbox" id="services_system_applications_phone"></td>
+                <td><input type="checkbox" id="services_system_applications_webhook"></td>
+            </tr>
+            <tr class="">
+                <td class=""><strong>End-User Applications</strong><br><small>Applications that your average user installs and uses regularly.<br><em>Examples: Chrome, Adobe Reader, Spotify, VLC, Steam.</em></small></td>
+                <td><input type="checkbox" id="end_user_applications_email"></td>
+                <td><input type="checkbox" id="end_user_applications_sms"></td>
+                <td><input type="checkbox" id="end_user_applications_phone"></td>
+                <td><input type="checkbox" id="end_user_applications_webhook"></td>
+            </tr>
+            <tr class="">
+                <td class=""><strong>Test Notices</strong><br><small>Once per quarter, help us test our notification infrastructure at scale.<br><em>We would really appreciate it!</em></small></td>
+                <td><input type="checkbox" id="test_email"></td>
+                <td><input type="checkbox" id="test_sms"></td>
+                <td><input type="checkbox" id="test_phone"></td>
+                <td><input type="checkbox" id="test_webhook"></td>
+            </tr>
+        </tbody>
+    </table>
+    <br>
+    <input style="height:36px; width:300px; padding-left: 15px; text-align: left; font-weight:bold; font-size: 1em;" type="button" value="Save Subscription Preferences" onclick="submit_subscription_preferences()" />
+    <i class="fa fa-check" style="position: relative; z-index: 1; left: -30px; top: 1px; color: #7B7B7B; cursor:pointer; width: 0;"></i>
+<br><br></div>
+<h4>A quick note for our friends outside of the United States and Canada.</h4>
+<p>Our currently-selected telephony provider can only serve phone numbers in the US or Canada.
+Obviously, this isn't super ideal, but after we've gotten this service launched and more
+widely adopted, we will circle back and at least see if we can use a service like Twillio
+to provide, at a minimum, SMS support for global phone numbers. For now, supply your phone
+number if you are interested in <em>eventually</em> getting phone calls or SMS messages,
+and we'll keep in touch with updates.
+<br><br>Until we have better international phone support, this page will strongly recommend
+also opting into email notifications if subscribing to phone calls or SMS.</p>
+  </div>
+</article>
+
+    <footer>
+<p>
+  &copy; 2022  - This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/">Creative Commons Attribution-ShareAlike 4.0 International License 4.0 International License</a>
+</p>
+<p>
+Built with <a href="http://getpelican.com" target="_blank">Pelican</a> using <a href="http://bit.ly/flex-pelican" target="_blank">Flex</a> theme
+  <span class="footer-separator">|</span>
+  Switch to the <a href="javascript:void(0)" onclick="theme.switch(`dark`)">dark</a> | <a href="javascript:void(0)" onclick="theme.switch(`light`)">light</a> | <a href="javascript:void(0)" onclick="theme.switch(`browser`)">browser</a> theme
+  <script id="dark-theme-script"
+          src="https://bugalert.org/theme/dark-theme/dark-theme.min.js"
+          data-enable-auto-detect-theme="True"
+          data-default-theme="light"
+          type="text/javascript">
+  </script>
+</p><p>
+  <a rel="license"
+     href="http://creativecommons.org/licenses/by-sa/4.0/"
+     target="_blank">
+    <img alt="Creative Commons License"
+         title="Creative Commons License"
+         style="border-width:0"
+           src="https://i.creativecommons.org/l/by-sa/4.0/80x15.png"
+         width="80"
+         height="15"/>
+  </a>
+</p>    </footer>
+  </main>
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context" : "http://schema.org",
+  "@type" : "Blog",
+  "name": " Bug Alert ",
+  "url" : "https://bugalert.org",
+  "image": "/images/bug.svg",
+  "description": "A nonprofit service for alerting security and IT professionals of high-impact and 0day vulnerabilities."
+}
+</script>
+<a href="https://github.com/sullivanmatt/bugalert" class="github-corner" aria-label="View source on Github">
+    <svg width="80"
+         height="80"
+         viewBox="0 0 250 250"
+         style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;"
+         aria-hidden="true">
+        <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+        <path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2"
+              fill="currentColor"
+              style="transform-origin: 130px 106px;"
+              class="octo-arm">
+        </path>
+        <path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z"
+              fill="currentColor"
+              class="octo-body">
+        </path>
+    </svg>
+</a>
+<style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+</body>
+</html>

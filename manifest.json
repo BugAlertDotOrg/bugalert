@@ -1,0 +1,474 @@
+[
+    {
+        "title": "Multiple Vulnerabilities in Atlassian Products (CVE-2022-26136, CVE-2022-26137, CVE-2022-26138)",
+        "summary": "<p>Multiple Vulnerabilities have been disclosed in Atlassian Products. A hardcoded credential vulnerability in Questions for Confluence, and Servlet Filter Bypass Vulnerabilities have been found in multiple Atlassian products that may enable Authentication Bypasses, XSS Attacks, and CORS attacks. These vulnerabilites have been assigned a bug alert severity of 'very high'. Atlassian recommends patching affected installations immediately.</p>",
+        "category": {
+            "name": "Services & System Applications",
+            "slug": "services-system-applications",
+            "url": "https://bugalert.org/categories/services-system-applications.html"
+        },
+        "date": 1658311200.0,
+        "uri": "https://bugalert.org/content/notices/2022-07-20-atlassian.html",
+        "author": {
+            "name": "Bug Alert Contributors",
+            "slug": "bug-alert-contributors",
+            "url": "https://bugalert.org/authors/bug-alert-contributors.html"
+        },
+        "email": null,
+        "tags": [
+            {
+                "name": "Confluence",
+                "slug": "confluence",
+                "url": "https://bugalert.org/tags/confluence.html"
+            },
+            {
+                "name": "Jira",
+                "slug": "jira",
+                "url": "https://bugalert.org/tags/jira.html"
+            },
+            {
+                "name": "Bitbucket",
+                "slug": "bitbucket",
+                "url": "https://bugalert.org/tags/bitbucket.html"
+            },
+            {
+                "name": "Bamboo",
+                "slug": "bamboo",
+                "url": "https://bugalert.org/tags/bamboo.html"
+            },
+            {
+                "name": "Fisheye",
+                "slug": "fisheye",
+                "url": "https://bugalert.org/tags/fisheye.html"
+            },
+            {
+                "name": "Crowd",
+                "slug": "crowd",
+                "url": "https://bugalert.org/tags/crowd.html"
+            },
+            {
+                "name": "Atlassian",
+                "slug": "atlassian",
+                "url": "https://bugalert.org/tags/atlassian.html"
+            },
+            {
+                "name": "Very High Severity",
+                "slug": "very-high-severity",
+                "url": "https://bugalert.org/tags/very-high-severity.html"
+            }
+        ]
+    },
+    {
+        "title": "Unauthenticated Remote Code Execution in Atlassian Confluence (CVE-2022-26134)",
+        "summary": "<p>An unauthenticated remote code execution flaw has been found, and is being actively exploited, in Atlassian Confluence, and has been assigned a bug alert severity of 'very high'. Atlassian recommends removing installations from the Internet immediately.</p>",
+        "category": {
+            "name": "Services & System Applications",
+            "slug": "services-system-applications",
+            "url": "https://bugalert.org/categories/services-system-applications.html"
+        },
+        "date": 1654189200.0,
+        "uri": "https://bugalert.org/content/notices/2022-06-02-confluence.html",
+        "author": {
+            "name": "Bug Alert Contributors",
+            "slug": "bug-alert-contributors",
+            "url": "https://bugalert.org/authors/bug-alert-contributors.html"
+        },
+        "email": null,
+        "tags": [
+            {
+                "name": "Confluence",
+                "slug": "confluence",
+                "url": "https://bugalert.org/tags/confluence.html"
+            },
+            {
+                "name": "Atlassian",
+                "slug": "atlassian",
+                "url": "https://bugalert.org/tags/atlassian.html"
+            },
+            {
+                "name": "Very High Severity",
+                "slug": "very-high-severity",
+                "url": "https://bugalert.org/tags/very-high-severity.html"
+            }
+        ]
+    },
+    {
+        "title": "Remote Code Execution in Microsoft Office Products for Windows",
+        "summary": "<p>A remote code execution vulnerability, dubbed 'Follina', has been found in Microsoft Office via Microsoft Support Diagnostic Tool (MSDT). This issue can be exploited in the default configuration on Windows, and only requires the user be tricked into downloading a malicious file. There is no patch. This issue has been assigned a bug alert severity of 'high'.</p>",
+        "category": {
+            "name": "End-User Applications",
+            "slug": "end-user-applications",
+            "url": "https://bugalert.org/categories/end-user-applications.html"
+        },
+        "date": 1653901200.0,
+        "uri": "https://bugalert.org/content/notices/2022-05-30-office.html",
+        "author": {
+            "name": "Bug Alert Contributors",
+            "slug": "bug-alert-contributors",
+            "url": "https://bugalert.org/authors/bug-alert-contributors.html"
+        },
+        "email": null,
+        "tags": [
+            {
+                "name": "Office",
+                "slug": "office",
+                "url": "https://bugalert.org/tags/office.html"
+            },
+            {
+                "name": "MSDT",
+                "slug": "msdt",
+                "url": "https://bugalert.org/tags/msdt.html"
+            },
+            {
+                "name": "Follina",
+                "slug": "follina",
+                "url": "https://bugalert.org/tags/follina.html"
+            },
+            {
+                "name": "Windows",
+                "slug": "windows",
+                "url": "https://bugalert.org/tags/windows.html"
+            },
+            {
+                "name": "Microsoft",
+                "slug": "microsoft",
+                "url": "https://bugalert.org/tags/microsoft.html"
+            },
+            {
+                "name": "CVE-2022-30190",
+                "slug": "cve-2022-30190",
+                "url": "https://bugalert.org/tags/cve-2022-30190.html"
+            },
+            {
+                "name": "High Severity",
+                "slug": "high-severity",
+                "url": "https://bugalert.org/tags/high-severity.html"
+            }
+        ]
+    },
+    {
+        "title": "Authentication Bypass in Atlassian Jira (CVE-2022-0540)",
+        "summary": "<p>An authentication bypass vulnerability has been found in Atlassian Jira. This issue can be exploited in the default configuration, and has been assigned a bug alert severity of 'very high'.</p>",
+        "category": {
+            "name": "Services & System Applications",
+            "slug": "services-system-applications",
+            "url": "https://bugalert.org/categories/services-system-applications.html"
+        },
+        "date": 1650481200.0,
+        "uri": "https://bugalert.org/content/notices/2022-04-20-jira.html",
+        "author": {
+            "name": "Bug Alert Contributors",
+            "slug": "bug-alert-contributors",
+            "url": "https://bugalert.org/authors/bug-alert-contributors.html"
+        },
+        "email": null,
+        "tags": [
+            {
+                "name": "Jira",
+                "slug": "jira",
+                "url": "https://bugalert.org/tags/jira.html"
+            },
+            {
+                "name": "Atlassian",
+                "slug": "atlassian",
+                "url": "https://bugalert.org/tags/atlassian.html"
+            },
+            {
+                "name": "Very High Severity",
+                "slug": "very-high-severity",
+                "url": "https://bugalert.org/tags/very-high-severity.html"
+            }
+        ]
+    },
+    {
+        "title": "Confirmed remote code execution (RCE) in Spring Core, an extremely popular Java framework (CVE-2022-22965)",
+        "summary": "<p>Praetorian has confirmed that a remote code execution vulnerability exists in Spring, an extremely popular Java framework. How broadly this impacts the Spring ecosystem remains unclear. The flaw has been assigned a bug alert severity of 'critical'.</p>",
+        "category": {
+            "name": "Software Frameworks, Libraries, and Components",
+            "slug": "software-frameworks-libraries-and-components",
+            "url": "https://bugalert.org/categories/software-frameworks-libraries-and-components.html"
+        },
+        "date": 1648652400.0,
+        "uri": "https://bugalert.org/content/notices/2022-03-30-spring.html",
+        "author": {
+            "name": "Bug Alert Contributors",
+            "slug": "bug-alert-contributors",
+            "url": "https://bugalert.org/authors/bug-alert-contributors.html"
+        },
+        "email": null,
+        "tags": [
+            {
+                "name": "Java",
+                "slug": "java",
+                "url": "https://bugalert.org/tags/java.html"
+            },
+            {
+                "name": "Spring",
+                "slug": "spring",
+                "url": "https://bugalert.org/tags/spring.html"
+            },
+            {
+                "name": "Critical Severity",
+                "slug": "critical-severity",
+                "url": "https://bugalert.org/tags/critical-severity.html"
+            },
+            {
+                "name": "CVE-2010-1622",
+                "slug": "cve-2010-1622",
+                "url": "https://bugalert.org/tags/cve-2010-1622.html"
+            },
+            {
+                "name": "CVE-2022-22965",
+                "slug": "cve-2022-22965",
+                "url": "https://bugalert.org/tags/cve-2022-22965.html"
+            }
+        ]
+    },
+    {
+        "title": "Advanced warning: possible remote code execution (RCE) in Spring, an extremely popular Java framework",
+        "summary": "<p>An unconfirmed, but possible, remote code execution vulnerability is believed to exist in Spring, an extremely popular Java framework. This issue is likely easily exploited in common configurations. If confirmed, another notice will be sent out with a severity of 'critical'. While unconfirmed, the severity has been assigned 'high'.</p>",
+        "category": {
+            "name": "Software Frameworks, Libraries, and Components",
+            "slug": "software-frameworks-libraries-and-components",
+            "url": "https://bugalert.org/categories/software-frameworks-libraries-and-components.html"
+        },
+        "date": 1648594800.0,
+        "uri": "https://bugalert.org/content/notices/2022-03-29-spring.html",
+        "author": {
+            "name": "Bug Alert Contributors",
+            "slug": "bug-alert-contributors",
+            "url": "https://bugalert.org/authors/bug-alert-contributors.html"
+        },
+        "email": null,
+        "tags": [
+            {
+                "name": "Java",
+                "slug": "java",
+                "url": "https://bugalert.org/tags/java.html"
+            },
+            {
+                "name": "Spring",
+                "slug": "spring",
+                "url": "https://bugalert.org/tags/spring.html"
+            },
+            {
+                "name": "High Severity",
+                "slug": "high-severity",
+                "url": "https://bugalert.org/tags/high-severity.html"
+            }
+        ]
+    },
+    {
+        "title": "Unauthenticated user impersonation (auth bypass) in SAP",
+        "summary": "<p>A request smuggling issue in SAP NetWeaver, SAP Content Server, and SAP Web Dispatcher allows unauthenticated user impersonation. These systems are commonly Internet-facing. The flaw has been assigned a bug alert severity of 'critical', and the vendor has supplied patches.</p>",
+        "category": {
+            "name": "Services & System Applications",
+            "slug": "services-system-applications",
+            "url": "https://bugalert.org/categories/services-system-applications.html"
+        },
+        "date": 1644314520.0,
+        "uri": "https://bugalert.org/content/notices/2022-02-08-sap.html",
+        "author": {
+            "name": "Bug Alert Contributors",
+            "slug": "bug-alert-contributors",
+            "url": "https://bugalert.org/authors/bug-alert-contributors.html"
+        },
+        "email": null,
+        "tags": [
+            {
+                "name": "SAP",
+                "slug": "sap",
+                "url": "https://bugalert.org/tags/sap.html"
+            },
+            {
+                "name": "CVE-2022-22536",
+                "slug": "cve-2022-22536",
+                "url": "https://bugalert.org/tags/cve-2022-22536.html"
+            },
+            {
+                "name": "Critical Severity",
+                "slug": "critical-severity",
+                "url": "https://bugalert.org/tags/critical-severity.html"
+            }
+        ]
+    },
+    {
+        "title": "Local privilege escalation in pkexec, a core Linux system component",
+        "summary": "<p>A local privilege escalation bug (from any user to root) has been found polkit's pkexec, and exploit code is available. This binary is a SUID root program available on every major Linux distro, and is most commonly installed if a GUI is present. The flaw has been assigned a bug alert severity of 'very high'.</p>",
+        "category": {
+            "name": "Operating Systems",
+            "slug": "operating-systems",
+            "url": "https://bugalert.org/categories/operating-systems.html"
+        },
+        "date": 1643143320.0,
+        "uri": "https://bugalert.org/content/notices/2022-01-25-pkexec.html",
+        "author": {
+            "name": "Bug Alert Contributors",
+            "slug": "bug-alert-contributors",
+            "url": "https://bugalert.org/authors/bug-alert-contributors.html"
+        },
+        "email": null,
+        "tags": [
+            {
+                "name": "pkexec",
+                "slug": "pkexec",
+                "url": "https://bugalert.org/tags/pkexec.html"
+            },
+            {
+                "name": "polkit",
+                "slug": "polkit",
+                "url": "https://bugalert.org/tags/polkit.html"
+            },
+            {
+                "name": "Pwnkit",
+                "slug": "pwnkit",
+                "url": "https://bugalert.org/tags/pwnkit.html"
+            },
+            {
+                "name": "Linux",
+                "slug": "linux",
+                "url": "https://bugalert.org/tags/linux.html"
+            },
+            {
+                "name": "Very High Severity",
+                "slug": "very-high-severity",
+                "url": "https://bugalert.org/tags/very-high-severity.html"
+            }
+        ]
+    },
+    {
+        "title": "Post-Launch Updates: Telegram Support, Community Slack, and Celebrating Success",
+        "summary": "<p>The Bug Alert team is celebrating a successful launch with more features (Telegram support!), a community Slack, and more.</p>",
+        "category": {
+            "name": "Bug Alert News",
+            "slug": "bug-alert-news",
+            "url": "https://bugalert.org/categories/bug-alert-news.html"
+        },
+        "date": 1641942000.0,
+        "uri": "https://bugalert.org/content/notices/2022-01-11-post-launch.html",
+        "author": {
+            "name": "Bug Alert Contributors",
+            "slug": "bug-alert-contributors",
+            "url": "https://bugalert.org/authors/bug-alert-contributors.html"
+        },
+        "email": null,
+        "tags": [
+            {
+                "name": "Telegram",
+                "slug": "telegram",
+                "url": "https://bugalert.org/tags/telegram.html"
+            },
+            {
+                "name": "Slack",
+                "slug": "slack",
+                "url": "https://bugalert.org/tags/slack.html"
+            }
+        ]
+    },
+    {
+        "title": "Bug Alert is Live",
+        "summary": "<p>Hello, world! Bug Alert is now live. Read the announcement post at https://mattslifebytes.com/2022/01/04/bugalert-org/ to learn more.</p>",
+        "category": {
+            "name": "Bug Alert News",
+            "slug": "bug-alert-news",
+            "url": "https://bugalert.org/categories/bug-alert-news.html"
+        },
+        "date": 1641304800.0,
+        "uri": "https://bugalert.org/content/notices/2022-01-04-bugalert.html",
+        "author": {
+            "name": "Bug Alert Contributors",
+            "slug": "bug-alert-contributors",
+            "url": "https://bugalert.org/authors/bug-alert-contributors.html"
+        },
+        "email": null,
+        "tags": []
+    },
+    {
+        "title": "RCE in Log4j",
+        "summary": "<p>A remote code execution vulnerability has been found in the popular Java logging library Log4j. This issue is easily exploited in common configurations, and has been assigned a bug alert severity of 'critical'.</p>",
+        "category": {
+            "name": "Software Frameworks, Libraries, and Components",
+            "slug": "software-frameworks-libraries-and-components",
+            "url": "https://bugalert.org/categories/software-frameworks-libraries-and-components.html"
+        },
+        "date": 1639090800.0,
+        "uri": "https://bugalert.org/content/notices/2021-12-09-log4j.html",
+        "author": {
+            "name": "Bug Alert Contributors",
+            "slug": "bug-alert-contributors",
+            "url": "https://bugalert.org/authors/bug-alert-contributors.html"
+        },
+        "email": null,
+        "tags": [
+            {
+                "name": "Java",
+                "slug": "java",
+                "url": "https://bugalert.org/tags/java.html"
+            },
+            {
+                "name": "Log4j",
+                "slug": "log4j",
+                "url": "https://bugalert.org/tags/log4j.html"
+            },
+            {
+                "name": "Critical Severity",
+                "slug": "critical-severity",
+                "url": "https://bugalert.org/tags/critical-severity.html"
+            }
+        ]
+    },
+    {
+        "title": "Placeholder for the End-User Applications Category",
+        "summary": "",
+        "category": {
+            "name": "End-User Applications",
+            "slug": "end-user-applications",
+            "url": "https://bugalert.org/categories/end-user-applications.html"
+        },
+        "date": 1638399600.0,
+        "uri": "https://bugalert.org/content/notices/2021-12-01-end-user-applications-placeholder.html",
+        "author": {
+            "name": "Bug Alert Contributors",
+            "slug": "bug-alert-contributors",
+            "url": "https://bugalert.org/authors/bug-alert-contributors.html"
+        },
+        "email": null,
+        "tags": []
+    },
+    {
+        "title": "Placeholder for the Operating Systems Category",
+        "summary": "",
+        "category": {
+            "name": "Operating Systems",
+            "slug": "operating-systems",
+            "url": "https://bugalert.org/categories/operating-systems.html"
+        },
+        "date": 1638399600.0,
+        "uri": "https://bugalert.org/content/notices/2021-12-01-operating-systems-placeholder.html",
+        "author": {
+            "name": "Bug Alert Contributors",
+            "slug": "bug-alert-contributors",
+            "url": "https://bugalert.org/authors/bug-alert-contributors.html"
+        },
+        "email": null,
+        "tags": []
+    },
+    {
+        "title": "Placeholder for the Services & System Applications Category",
+        "summary": "",
+        "category": {
+            "name": "Services & System Applications",
+            "slug": "services-system-applications",
+            "url": "https://bugalert.org/categories/services-system-applications.html"
+        },
+        "date": 1638399600.0,
+        "uri": "https://bugalert.org/content/notices/2021-12-01-services-system-applications-placeholder.html",
+        "author": {
+            "name": "Bug Alert Contributors",
+            "slug": "bug-alert-contributors",
+            "url": "https://bugalert.org/authors/bug-alert-contributors.html"
+        },
+        "email": null,
+        "tags": []
+    }
+]

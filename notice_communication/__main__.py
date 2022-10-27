@@ -88,14 +88,16 @@ def send_telephony(summary, category, title, tags, url, filename, sms_file_id, p
     final.export(final_filename, format="mp3")
 
     msg = f"Bug Alert: {summary} {url}?src=s"
-    broadcast = create_sms_broadcast(msg, os.path.basename(filename), sms_file_id, sess)
-    print(broadcast)
+    # TODO Twilio
+    #broadcast = create_sms_broadcast_to_tta(msg, os.path.basename(filename), sms_file_id, sess)
+    #print(broadcast)
 
     # Only phone call for critical severity 
     if 'critical severity' in tags.lower():
-        audio_id = upload_audio(final_filename, sess)
-        broadcast = create_phone_broadcast(audio_id, final_filename, phone_file_id, sess)
-        print(broadcast)
+        # TODO Twilio
+        #audio_id = upload_audio_to_tta(final_filename, sess)
+        #broadcast = create_phone_broadcast_to_tta(audio_id, final_filename, phone_file_id, sess)
+        #print(broadcast)
 
 def update_contact_list(category):
     headers = {"Origin": "https://bugalert.org"}
@@ -164,6 +166,7 @@ def get_content_meta(filename):
         "Services & System Applications": "services_system_applications",
         "End-User Applications": "end_user_applications",
         "Test": "test",
+        "Dev": "dev",
         "Bug Alert News": "bug_alert_news"
     }
     category = category_keys[category_verbose]
@@ -176,7 +179,7 @@ def get_content_meta(filename):
 
     return summary, category, title, slug, tags
 
-def upload_audio(filename, sess):
+def upload_audio_to_tta(filename, sess):
     url = f"https://{TEXTEMALL_BASE_DOMAIN}/v1/audio/{filename}"
     payload={}
     files=[
@@ -191,13 +194,13 @@ def upload_audio(filename, sess):
     return response.json()['AudioID']
 
 
-def create_phone_broadcast(audioid, filename, phone_file_id, sess):
+def create_phone_broadcast_to_tta(audioid, filename, phone_file_id, sess):
     url = f"https://{TEXTEMALL_BASE_DOMAIN}/v1/broadcasts"
     payload={'BroadcastName': filename, 'BroadcastType': 'Announcement', 'StartDate': '', 'CallerID': '5076688567', 'Audio': {'AudioID': audioid}, 'FileUploads': [{'FileID': phone_file_id}]}
     response = sess.post(url, json=payload)
     return response.json()
 
-def create_sms_broadcast(msg, filename, sms_file_id, sess):
+def create_sms_broadcast_to_tta(msg, filename, sms_file_id, sess):
     url = f"https://{TEXTEMALL_BASE_DOMAIN}/v1/broadcasts"
     payload={'BroadcastName': filename, 'BroadcastType': 'SMS', 'StartDate': '', 'TextMessage': msg, 'FileUploads': [{'FileID': sms_file_id}]}
     response = sess.post(url, json=payload)

@@ -181,7 +181,7 @@ def lambda_handler(event, context):
             return respond_error("Record not found", origin, status=404)
 
     elif method == 'POST' and path == 'update':
-        categories = ["frameworks_libs_components", "operating_systems", "services_system_applications", "end_user_applications", "test"]
+        categories = ["frameworks_libs_components", "operating_systems", "services_system_applications", "end_user_applications", "test", "dev"]
 
         phone_number = body.get('phone_number')
         phone_country_code = body.get('phone_country_code')
@@ -202,7 +202,7 @@ def lambda_handler(event, context):
             UpdateExpression = 'SET phone_number = :phone_number, phone_country_code = :phone_country_code, ' \
                                'webhook_url = :webhook_url, frameworks_libs_components = :frameworks_libs_components, ' \
                                'operating_systems = :operating_systems, services_system_applications = :services_system_applications, ' \
-                               'end_user_applications = :end_user_applications, test = :test',
+                               'end_user_applications = :end_user_applications, test = :test, dev = :dev',
             ExpressionAttributeValues = {
                 ':phone_number': phone_number,
                 ':phone_country_code': phone_country_code,
@@ -211,7 +211,8 @@ def lambda_handler(event, context):
                 ':operating_systems': body.get('operating_systems'),
                 ':services_system_applications': body.get('services_system_applications'),
                 ':end_user_applications': body.get('end_user_applications'),
-                ':test': body.get('test')
+                ':test': body.get('test'),
+                ':dev': ''
             },
             ReturnValues="UPDATED_NEW"
         )
@@ -226,24 +227,24 @@ def lambda_handler(event, context):
                 phone_opted_in = True
 
         if (sms_opted_in or phone_opted_in) and phone_country_code == 1 and phone_number:
-            send_telephony_confirmation(phone_number)
+            send_telephony_confirmation_tta(phone_number)
 
         return respond_success({"status": "success"}, origin)
 
     return respond_error(f"Unsupported method {method}", origin, status=405)
 
-def send_telephony_confirmation(phone_number):
-    conversation_id = make_conversation(phone_number)
-    send_message(conversation_id, "Bug Alert: you are opted in. SMS notices will come from this number; calls will come from +1 (507) 668-8567. Save both to contacts.")
+def send_telephony_confirmation_tta(phone_number):
+    conversation_id = make_conversation_tta(phone_number)
+    send_message_tta(conversation_id, "Bug Alert: you are opted in. SMS notices will come from this number; calls will come from +1 (507) 668-8567. Save both to contacts.")
 
-def make_conversation(phone_number):
+def make_conversation_tta(phone_number):
     url = f"https://{TEXTEMALL_BASE_DOMAIN}/v1/conversations"
     payload={'TextPhoneNumber': '18332446351', 'PhoneNumber': phone_number}
     response = sess.post(url, json=payload)
     print(response.json())
     return response.json().get('ConversationID')
 
-def send_message(conversation_id, msg):
+def send_message_tta(conversation_id, msg):
     url = f"https://{TEXTEMALL_BASE_DOMAIN}/v1/conversations/{conversation_id}/textmessages"
     payload={'Message': msg}
     response = sess.post(url, json=payload)
@@ -270,6 +271,7 @@ def upload_contact_list(category):
             contact['end_user_applications'] = i.get('end_user_applications')
             contact['services_system_applications'] = i.get('services_system_applications')
             contact['test'] = i.get('test')
+            contact['dev'] = i.get('dev')
             contact['frameworks_libs_components'] = i.get('frameworks_libs_components')
             contact['operating_systems'] = i.get('operating_systems')
             contact['webhook_url'] = i.get('webhook_url')
@@ -287,8 +289,8 @@ def upload_contact_list(category):
 
     # Now put them on telephony services
     email_file_id = upload_email_contacts('/tmp/email.csv')
-    sms_file_id = upload_telephony_contacts('/tmp/sms.csv')
-    phone_file_id = upload_telephony_contacts('/tmp/phone.csv')
+    sms_file_id = upload_telephony_contacts_tta('/tmp/sms.csv')
+    phone_file_id = upload_telephony_contacts_tta('/tmp/phone.csv')
     print(f"email_file_id: {sms_file_id}")
     print(f"sms_file_id: {sms_file_id}")
     print(f"phone_file_id: {phone_file_id}")
@@ -334,7 +336,7 @@ def upload_email_contacts(filepath):
 
     return list_id
     
-def upload_telephony_contacts(filepath):
+def upload_telephony_contacts_tta(filepath):
     with open(filepath, 'r') as f:
         payload = f.read()
 

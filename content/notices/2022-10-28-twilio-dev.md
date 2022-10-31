@@ -1,10 +1,10 @@
 ---
-Title: Test of Twilio Services
-Date: 2022-10-27 10:00
+Title: Test of Twilio Services 2
+Date: 2022-10-28 10:00
 Category: Dev
-Tags: testing
+Tags: testing2
 Slug: twilio-dev
-Summary: This is a test notice as Twilio integration is built.
+Summary: This is a second test notice as Twilio integration is built.
 ---
 
 Bug Alert is testing support for using Twilio for sending notices. Please ignore this post.

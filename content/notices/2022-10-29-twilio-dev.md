@@ -1,8 +1,8 @@
 ---
-Title: Test of Twilio Services 2
-Date: 2022-10-28 10:00
+Title: Test of Twilio Services 3
+Date: 2022-10-29 10:00
 Category: Dev
-Tags: testing2
+Tags: testing3
 Slug: twilio-dev
 Summary: This is a second test notice as Twilio integration is built.
 ---

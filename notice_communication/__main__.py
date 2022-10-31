@@ -40,7 +40,7 @@ def main():
         create_email_broadcast(summary, category, title, url, slug, os.path.basename(filename), email_file_id)
 
     if os.getenv('API_KEY'):
-        send_telephony_twilio(summary, category, title, tags, url, filename, sms_file_id, phone_file_id)
+        send_telephony_twilio(summary, category, title, tags, url, filename)
 
     print("Operations complete.")
 
@@ -53,7 +53,7 @@ def send_telegram(summary, category, title, url):
     response.raise_for_status()
     print(response.json())
 
-def send_telephony_twilio(summary, category, title, tags, url, filename, sms_file_id, phone_file_id):
+def send_telephony_twilio(summary, category, title, tags, url, filename):
     msg = f"Bug Alert: {summary} {url}?src=s"
     create_sms_broadcast_to_twilio(category, msg)
 

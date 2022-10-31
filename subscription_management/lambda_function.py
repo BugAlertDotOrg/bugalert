@@ -11,7 +11,6 @@ import requests
 
 import simplejson as json
 from datetime import datetime
-from requests_oauthlib import OAuth1Session
 from sendgrid import SendGridAPIClient
 from boto3.dynamodb.conditions import Key, Attr
 
@@ -27,10 +26,10 @@ ses = boto3.client('ses', region_name="us-east-1")
 hmacsecret = os.getenv('HMACSECRET')
 hmacsecret = codecs.encode(hmacsecret)
 
-TEXTEMALL_BASE_DOMAIN = "rest.text-em-all.com"
-sess = OAuth1Session(os.getenv('TEXT_EM_ALL_ID'),
-                     client_secret=os.getenv('TEXT_EM_ALL_SECRET'),
-                     resource_owner_key=os.getenv('TEXT_EM_ALL_TOKEN'))
+TWILIO_API_SID = "AC5514360e31adda19a8ac1ec9eda8e093"  # this is not a secret
+TWILIO_MSG_SERVICE = "MGbc4326b198ba4fd9a20282a13ed5f1d1"  # this is not a secret
+TWILIO_PHONE_NUMBER = "+15076688567"
+TWILIO_TWIML_BIN_URL = "https://handler.twilio.com/twiml/EH4727606a18a370c889f009a17b258c01"
 
 
 def respond_error(err, origin, status=400):
@@ -110,12 +109,38 @@ def lambda_handler(event, context):
         if not hmac.compare_digest(os.getenv('API_KEY'), body.get('api_key')):
             return respond_error("API key invalid.", origin)
 
-        email_file_id, sms_file_id, phone_file_id = upload_contact_list(body.get('category'))
+        email_file_id = upload_contact_list(body.get('category'))
         msg = {
           "status": "success",
-          "email_file_id": email_file_id,
-          "sms_file_id": sms_file_id,
-          "phone_file_id": phone_file_id
+          "email_file_id": email_file_id
+        }
+        return respond_success(msg, origin)
+    elif method == 'POST' and path == 'runsms':
+        # Use Twilio to fire off an SMS.
+        # Call is protected from unathorized use by a simple PSK.
+        if not os.getenv('API_KEY') or not body.get('api_key'):
+            return respond_error("API key not set or sent.", origin)
+
+        if not hmac.compare_digest(os.getenv('API_KEY'), body.get('api_key')):
+            return respond_error("API key invalid.", origin)
+
+        run_twilio_sms(body.get('category'), body.get('message'))
+        msg = {
+          "status": "success"
+        }
+        return respond_success(msg, origin)
+    elif method == 'POST' and path == 'runtel':
+        # Use Twilio to fire off a phone call.
+        # Call is protected from unathorized use by a simple PSK.
+        if not os.getenv('API_KEY') or not body.get('api_key'):
+            return respond_error("API key not set or sent.", origin)
+
+        if not hmac.compare_digest(os.getenv('API_KEY'), body.get('api_key')):
+            return respond_error("API key invalid.", origin)
+
+        run_twilio_phone(body.get('category'), body.get('message'))
+        msg = {
+          "status": "success"
         }
         return respond_success(msg, origin)
     elif method == 'POST' and path == 'verify':
@@ -181,7 +206,7 @@ def lambda_handler(event, context):
             return respond_error("Record not found", origin, status=404)
 
     elif method == 'POST' and path == 'update':
-        categories = ["frameworks_libs_components", "operating_systems", "services_system_applications", "end_user_applications", "test"]
+        categories = ["frameworks_libs_components", "operating_systems", "services_system_applications", "end_user_applications", "test", "dev"]
 
         phone_number = body.get('phone_number')
         phone_country_code = body.get('phone_country_code')
@@ -202,7 +227,7 @@ def lambda_handler(event, context):
             UpdateExpression = 'SET phone_number = :phone_number, phone_country_code = :phone_country_code, ' \
                                'webhook_url = :webhook_url, frameworks_libs_components = :frameworks_libs_components, ' \
                                'operating_systems = :operating_systems, services_system_applications = :services_system_applications, ' \
-                               'end_user_applications = :end_user_applications, test = :test',
+                               'end_user_applications = :end_user_applications, test = :test, dev = :dev',
             ExpressionAttributeValues = {
                 ':phone_number': phone_number,
                 ':phone_country_code': phone_country_code,
@@ -211,7 +236,8 @@ def lambda_handler(event, context):
                 ':operating_systems': body.get('operating_systems'),
                 ':services_system_applications': body.get('services_system_applications'),
                 ':end_user_applications': body.get('end_user_applications'),
-                ':test': body.get('test')
+                ':test': body.get('test'),
+                ':dev': ''
             },
             ReturnValues="UPDATED_NEW"
         )
@@ -225,29 +251,85 @@ def lambda_handler(event, context):
             if body.get(category) and 'p' in body.get(category):
                 phone_opted_in = True
 
-        if (sms_opted_in or phone_opted_in) and phone_country_code == 1 and phone_number:
-            send_telephony_confirmation(phone_number)
+        if (sms_opted_in or phone_opted_in) and phone_country_code and phone_number:
+            from twilio.rest import Client
+            client = Client(TWILIO_API_SID, os.getenv('TWILIO_API_KEY'))
+            confirm_msg = "Bug Alert: you are opted in. SMS & calls will come from this number, be sure to save it to your contacts."
+            client.messages.create(body=confirm_msg, from_=TWILIO_MSG_SERVICE, to='+' + str(phone_country_code) + str(phone_number))
 
         return respond_success({"status": "success"}, origin)
 
     return respond_error(f"Unsupported method {method}", origin, status=405)
 
-def send_telephony_confirmation(phone_number):
-    conversation_id = make_conversation(phone_number)
-    send_message(conversation_id, "Bug Alert: you are opted in. SMS notices will come from this number; calls will come from +1 (507) 668-8567. Save both to contacts.")
+def run_twilio_sms(category, message):
+    response = table.scan(FilterExpression = Attr(category).contains('s'))
+    data = response['Items']
 
-def make_conversation(phone_number):
-    url = f"https://{TEXTEMALL_BASE_DOMAIN}/v1/conversations"
-    payload={'TextPhoneNumber': '18332446351', 'PhoneNumber': phone_number}
-    response = sess.post(url, json=payload)
-    print(response.json())
-    return response.json().get('ConversationID')
+    while 'LastEvaluatedKey' in response:
+        response = table.scan(ExclusiveStartKey=response['LastEvaluatedKey'])
+        data.extend(response['Items'])
 
-def send_message(conversation_id, msg):
-    url = f"https://{TEXTEMALL_BASE_DOMAIN}/v1/conversations/{conversation_id}/textmessages"
-    payload={'Message': msg}
-    response = sess.post(url, json=payload)
-    print(response.json())
+    recipients = []
+    for i in data:
+        contact = {}
+        contact['email'] = i.get('email')
+        contact['end_user_applications'] = i.get('end_user_applications')
+        contact['services_system_applications'] = i.get('services_system_applications')
+        contact['test'] = i.get('test')
+        contact['dev'] = i.get('dev')
+        contact['frameworks_libs_components'] = i.get('frameworks_libs_components')
+        contact['operating_systems'] = i.get('operating_systems')
+        contact['webhook_url'] = i.get('webhook_url')
+        contact['phone_number'] = i.get('phone_number')
+        contact['phone_country_code'] = i.get('phone_country_code')
+
+        print(contact)
+        if category in contact and contact[category] and 's' in contact[category] and contact.get('phone_country_code') and contact.get('phone_number'):
+            recipients.append(str(contact.get('phone_country_code')) + str(contact.get('phone_number')))
+
+    from twilio.rest import Client 
+    client = Client(TWILIO_API_SID, os.getenv('TWILIO_API_KEY'))
+
+    for recipient in recipients:
+        twilio_message = client.messages.create(body=message, from_=TWILIO_MSG_SERVICE, to='+' + recipient)
+        print(str(vars(twilio_message)))
+
+def run_twilio_phone(category, message):
+    response = table.scan(FilterExpression = Attr(category).contains('p'))
+    data = response['Items']
+
+    while 'LastEvaluatedKey' in response:
+        response = table.scan(ExclusiveStartKey=response['LastEvaluatedKey'])
+        data.extend(response['Items'])
+
+    recipients = []
+    for i in data:
+        contact = {}
+        contact['email'] = i.get('email')
+        contact['end_user_applications'] = i.get('end_user_applications')
+        contact['services_system_applications'] = i.get('services_system_applications')
+        contact['test'] = i.get('test')
+        contact['dev'] = i.get('dev')
+        contact['frameworks_libs_components'] = i.get('frameworks_libs_components')
+        contact['operating_systems'] = i.get('operating_systems')
+        contact['webhook_url'] = i.get('webhook_url')
+        contact['phone_number'] = i.get('phone_number')
+        contact['phone_country_code'] = i.get('phone_country_code')
+
+        print(contact)
+        if category in contact and contact[category] and 'p' in contact[category] and contact.get('phone_country_code') and contact.get('phone_number'):
+            recipients.append(str(contact.get('phone_country_code')) + str(contact.get('phone_number')))
+
+    from twilio.rest import Client
+    client = Client(TWILIO_API_SID, os.getenv('TWILIO_API_KEY'))
+    from urllib.parse import quote_plus
+
+    for recipient in recipients:
+        twilio_call = client.calls.create(
+                   url=TWILIO_TWIML_BIN_URL + "?Message=" + quote_plus(message),
+                   from_=TWILIO_PHONE_NUMBER,
+                   to='+' + recipient)
+        print(str(vars(twilio_call)))
 
 def upload_contact_list(category):
     response = table.scan(FilterExpression = Attr(category).contains('e') |Attr(category).contains('s') | Attr(category).contains('p'))
@@ -258,18 +340,15 @@ def upload_contact_list(category):
         data.extend(response['Items'])
 
     # TODO tempfile lib!
-    with open('/tmp/email.csv', 'w') as email_file, \
-         open('/tmp/sms.csv', 'w') as sms_file, \
-         open('/tmp/phone.csv', 'w') as phone_file:
+    with open('/tmp/email.csv', 'w') as email_file:
         email_file.write("Email\n")
-        sms_file.write("First Name,Last Name,Notes,Phone Number\n")
-        phone_file.write("First Name,Last Name,Notes,Phone Number\n")
         for i in data:
             contact = {}
             contact['email'] = i.get('email')
             contact['end_user_applications'] = i.get('end_user_applications')
             contact['services_system_applications'] = i.get('services_system_applications')
             contact['test'] = i.get('test')
+            contact['dev'] = i.get('dev')
             contact['frameworks_libs_components'] = i.get('frameworks_libs_components')
             contact['operating_systems'] = i.get('operating_systems')
             contact['webhook_url'] = i.get('webhook_url')
@@ -279,21 +358,12 @@ def upload_contact_list(category):
             print(contact)
             if category in contact and contact[category] and 'e' in contact[category]:
                 email_file.write(f"{contact.get('email')}\n")
-            if category in contact and contact[category] and's' in contact[category] and contact.get('phone_country_code') and contact.get('phone_number') and contact.get('phone_country_code') == 1:
-                # Text-Em-All seems to need dummy values for name&notes to not flip out
-                sms_file.write(f"Bugs,Allert,bugs.allert@example.com,1{contact.get('phone_number')}\n")
-            if category in contact and contact[category] and'p' in contact[category] and contact.get('phone_country_code') and contact.get('phone_number') and contact.get('phone_country_code') == 1:
-                phone_file.write(f"Bugs,Allert,bugs.allert@example.com,1{contact.get('phone_number')}\n")
 
-    # Now put them on telephony services
+    # Now put them on sendgrid
     email_file_id = upload_email_contacts('/tmp/email.csv')
-    sms_file_id = upload_telephony_contacts('/tmp/sms.csv')
-    phone_file_id = upload_telephony_contacts('/tmp/phone.csv')
-    print(f"email_file_id: {sms_file_id}")
-    print(f"sms_file_id: {sms_file_id}")
-    print(f"phone_file_id: {phone_file_id}")
+    print(f"email_file_id: {email_file_id}")
 
-    return email_file_id, sms_file_id, phone_file_id
+    return email_file_id
 
 def upload_email_contacts(filepath):
     list_name = datetime.now().strftime("%Y-%m-%d-%H:%M:%S.%f")
@@ -333,17 +403,3 @@ def upload_email_contacts(filepath):
     response.raise_for_status()
 
     return list_id
-    
-def upload_telephony_contacts(filepath):
-    with open(filepath, 'r') as f:
-        payload = f.read()
-
-    print(f"Sending payload: {payload}")
-    url = f"https://{TEXTEMALL_BASE_DOMAIN}/v1/fileuploads"
-    headers = {
-          'Accept': 'application/json',
-          'Content-Type': 'text/csv',
-    }
-    response = sess.post(url, headers=headers, data=payload)
-    print (response.json())
-    return response.json().get('FileID')

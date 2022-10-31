@@ -4,7 +4,7 @@ Date: 2022-07-20 10:00
 Category: Services & System Applications
 Tags: Confluence, Jira, Bitbucket, Bamboo, Fisheye, Crowd, Atlassian, Very High Severity
 Slug: atlassian
-Summary: Multiple Vulnerabilities have been disclosed in Atlassian Products. A hardcoded credential vulnerability in Questions for Confluence, and Servlet Filter Bypass Vulnerabilities have been found in multiple Atlassian products that may enable Authentication Bypasses, XSS Attacks, and CORS attacks. These vulnerabilites have been assigned a bug alert severity of 'very high'. Atlassian recommends patching affected installations immediately.
+Summary: Multiple Vulnerabilities have been disclosed in Atlassian Products. A hardcoded credential vulnerability in Questions for Confluence, and Servlet Filter Bypass Vulnerabilities have been found in multiple Atlassian products that may enable Authentication Bypasses, XSS Attacks, and CORS attacks. These vulnerabilities have been assigned a bug alert severity of 'very high'. Atlassian recommends patching affected installations immediately.
 ---
 
 On Wednesday, July 20th, 2022, [Atlassian released a Security Advisory](https://confluence.atlassian.com/security/july-2022-atlassian-security-advisories-overview-1142446703.html) stating that a hardcoded credential vulnerability exists in the Questions for Confluence application, as well as Servlet Filter bypasses in both first and third party applications tied to multiple Atlassian products. 

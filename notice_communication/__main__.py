@@ -54,12 +54,12 @@ def send_telegram(summary, category, title, url):
     print(response.json())
 
 def send_telephony_twilio(summary, category, title, tags, url, filename):
-    msg = f"Bug Alert: {summary} {url}?src=s"
-    create_sms_broadcast_to_twilio(category, msg)
+    msg_sms = f"Bug Alert: {summary} {url}?src=s"
+    create_sms_broadcast_to_twilio(category, msg_sms)
 
     # Only phone call for critical severity
     if 'critical severity' in tags.lower() or category == 'dev':
-        create_phone_broadcast_to_twilio(category, msg)
+        create_phone_broadcast_to_twilio(category, summary)
 
 def update_contact_list(category):
     headers = {"Origin": "https://bugalert.org"}

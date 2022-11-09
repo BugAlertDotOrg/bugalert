@@ -7,8 +7,9 @@ Slug: twilio-support-test
 Summary: This is a test notice, which you have opted in to. Bug Alert has completed integrating Twilio support for international calls and SMS.
 ---
 
-The Bug Alert team is excited to test our integration with Twilio, which will allow the project to send calls and SMS notifications to our subscribers outside of North America. When Bug Alert launched in January 2022, it was hard to imagine having even a few hundred people as part of our community. Today, we serve notices to thousands of people, and continue to stand at the ready to make a positive difference in the security community.
+The Bug Alert team is excited to test our integration with Twilio, which will allow the project to send calls and SMS notifications to our subscribers outside of North America. When Bug Alert launched in January 2022, it was hard to imagine having even a few hundred people as part of our community. Today, we serve notices to thousands of people all across the world, and continue to stand at the ready to make a positive difference in the security community. Thank you for your continued support, and we're so glad to be bringing the entire Bug Alert feature set to our worldwide community.
 
+If you got this test notice by SMS (we didn't fire off phone calls for this one), feel free to take a screen shot and post it in celebration on the [GitHub pull request for this notice](https://github.com/BugAlertDotOrg/bugalert/pull/73)! We especially want to celebrate a (hopefully) successful test with anyone who lives outside of North America.
 
 ### A few housekeeping items:
 

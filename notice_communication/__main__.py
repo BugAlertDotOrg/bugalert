@@ -50,8 +50,7 @@ def send_telegram(summary, category, title, url):
     msg = f"{title}: {summary}\n{url}?src=tg"
     url_to_send = f"https://api.telegram.org/bot{TELEGRAM_API_KEY}/sendMessage?chat_id={TG_CHAT_ID}&text={msg}"
     response = requests.get(url_to_send)
-    response.raise_for_status()
-    print(response.json())
+    print(response.content)
 
 def send_telephony_twilio(summary, category, title, tags, url, filename):
     msg_sms = f"Bug Alert: {summary} {url}?src=s"
@@ -67,6 +66,7 @@ def update_contact_list(category):
                 "email": "nobody@example.com",
                 "api_key": os.getenv('API_KEY')} # email field required on API validation rules
     response = requests.post(f"https://{SUBSCRIPTIONS_API_BASE_DOMAIN}/listup", headers=headers, json=payload)
+    print(response.content)
     response.raise_for_status()
     response_dict = response.json()
 
@@ -122,9 +122,7 @@ def create_sms_broadcast_to_twilio(category, msg):
                 "message": msg,
                 "api_key": os.getenv('API_KEY')} # email field required on API validation rules
     response = requests.post(f"https://{SUBSCRIPTIONS_API_BASE_DOMAIN}/runsms", headers=headers, json=payload)
-    response_dict = response.json()
-
-    print(response_dict)
+    print(response.content)
 
 def create_phone_broadcast_to_twilio(category, msg):
     headers = {"Origin": "https://bugalert.org"}
@@ -133,9 +131,7 @@ def create_phone_broadcast_to_twilio(category, msg):
                 "message": msg,
                 "api_key": os.getenv('API_KEY')} # email field required on API validation rules
     response = requests.post(f"https://{SUBSCRIPTIONS_API_BASE_DOMAIN}/runtel", headers=headers, json=payload)
-    response_dict = response.json()
-
-    print(response_dict)
+    print(response.content)
 
 def create_email_broadcast(summary, category, title, url, slug, filename, email_file_id):
     sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))

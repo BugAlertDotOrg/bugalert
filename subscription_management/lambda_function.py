@@ -291,8 +291,11 @@ def run_twilio_sms(category, message):
     client = Client(TWILIO_API_SID, os.getenv('TWILIO_API_KEY'))
 
     for recipient in recipients:
-        twilio_message = client.messages.create(body=message, from_=TWILIO_MSG_SERVICE, to='+' + recipient)
-        print(str(vars(twilio_message)))
+        try:
+           twilio_message = client.messages.create(body=message, from_=TWILIO_MSG_SERVICE, to='+' + recipient)
+           print(str(vars(twilio_message)))
+        except:
+           print("Could not SMS user: " + str(recipient))
 
 def run_twilio_phone(category, message):
     response = table.scan(FilterExpression = Attr(category).contains('p'))
@@ -325,11 +328,14 @@ def run_twilio_phone(category, message):
     from urllib.parse import quote_plus
 
     for recipient in recipients:
-        twilio_call = client.calls.create(
-                   url=TWILIO_TWIML_BIN_URL + "?Message=" + quote_plus(message),
-                   from_=TWILIO_PHONE_NUMBER,
-                   to='+' + recipient)
-        print(str(vars(twilio_call)))
+        try:
+            twilio_call = client.calls.create(
+                       url=TWILIO_TWIML_BIN_URL + "?Message=" + quote_plus(message),
+                       from_=TWILIO_PHONE_NUMBER,
+                       to='+' + recipient)
+            print(str(vars(twilio_call)))
+        except:
+           print("Could not call user: " + str(recipient))
 
 def upload_contact_list(category):
     response = table.scan(FilterExpression = Attr(category).contains('e') |Attr(category).contains('s') | Attr(category).contains('p'))

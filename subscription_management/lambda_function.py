@@ -291,8 +291,11 @@ def run_twilio_sms(category, message):
     client = Client(TWILIO_API_SID, os.getenv('TWILIO_API_KEY'))
 
     for recipient in recipients:
-        twilio_message = client.messages.create(body=message, from_=TWILIO_MSG_SERVICE, to='+' + recipient)
-        print(str(vars(twilio_message)))
+        try:
+           twilio_message = client.messages.create(body=message, from_=TWILIO_MSG_SERVICE, to='+' + recipient)
+           print(str(vars(twilio_message)))
+        except:
+           print("Could not send message to user: " + str(recipient))
 
 def run_twilio_phone(category, message):
     response = table.scan(FilterExpression = Attr(category).contains('p'))

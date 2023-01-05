@@ -255,7 +255,7 @@ def lambda_handler(event, context):
             from twilio.rest import Client
             client = Client(TWILIO_API_SID, os.getenv('TWILIO_API_KEY'))
             confirm_msg = "Bug Alert: you are opted in. SMS & calls will come from this number, be sure to save it to your contacts."
-            client.messages.create(body=confirm_msg, from_=TWILIO_MSG_SERVICE, to='+' + str(phone_country_code) + str(phone_number))
+            client.messages.create(body=confirm_msg, from_=TWILIO_MSG_SERVICE, to='+' + str(phone_country_code) + str(phone_number), max_price=0.11)
 
         return respond_success({"status": "success"}, origin)
 

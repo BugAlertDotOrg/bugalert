@@ -292,7 +292,7 @@ def run_twilio_sms(category, message):
 
     for recipient in recipients:
         try:
-           twilio_message = client.messages.create(body=message, from_=TWILIO_MSG_SERVICE, to='+' + recipient)
+           twilio_message = client.messages.create(body=message, from_=TWILIO_MSG_SERVICE, to='+' + recipient, max_price=0.11)
            print(str(vars(twilio_message)))
         except:
            print("Could not SMS user: " + str(recipient))

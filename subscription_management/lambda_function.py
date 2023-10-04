@@ -15,7 +15,7 @@ from sendgrid import SendGridAPIClient
 from boto3.dynamodb.conditions import Key, Attr
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
 
 dynamo = boto3.resource('dynamodb', region_name="us-east-1")
 table = dynamo.Table('bugalert-subscriptions-prod')
@@ -44,7 +44,7 @@ def respond_error(err, origin, status=400):
             'Access-Control-Allow-Methods': 'GET, POST, OPTIONS, HEAD'
         },
     }
-    print(response)
+    logging.info(str(response))
     return response
 
 def respond_success(msg, origin):
@@ -61,7 +61,7 @@ def respond_success(msg, origin):
             'Access-Control-Allow-Methods': 'GET, POST, OPTIONS, HEAD'
         },
     }
-    print(response)
+    logging.info(str(response))
     return response
 
 def lambda_handler(event, context):
@@ -252,10 +252,14 @@ def lambda_handler(event, context):
                 phone_opted_in = True
 
         if (sms_opted_in or phone_opted_in) and phone_country_code and phone_number:
-            from twilio.rest import Client
-            client = Client(TWILIO_API_SID, os.getenv('TWILIO_API_KEY'))
-            confirm_msg = "Bug Alert: you are opted in. SMS & calls will come from this number, be sure to save it to your contacts."
-            client.messages.create(body=confirm_msg, from_=TWILIO_MSG_SERVICE, to='+' + str(phone_country_code) + str(phone_number))
+            recipient = '+' + str(phone_country_code) + str(phone_number)
+            try:
+                from twilio.rest import Client
+                client = Client(TWILIO_API_SID, os.getenv('TWILIO_API_KEY'))
+                confirm_msg = "Bug Alert: you are opted in. SMS & calls will come from this number, be sure to save it to your contacts."
+                client.messages.create(body=confirm_msg, from_=TWILIO_MSG_SERVICE, to=recipient, max_price=0.11)
+            except:
+                logging.exception("Could not SMS user: " + str(recipient))
 
         return respond_success({"status": "success"}, origin)
 
@@ -283,7 +287,7 @@ def run_twilio_sms(category, message):
         contact['phone_number'] = i.get('phone_number')
         contact['phone_country_code'] = i.get('phone_country_code')
 
-        print(contact)
+        logging.debug(contact)
         if category in contact and contact[category] and 's' in contact[category] and contact.get('phone_country_code') and contact.get('phone_number'):
             recipients.append(str(contact.get('phone_country_code')) + str(contact.get('phone_number')))
 
@@ -292,10 +296,10 @@ def run_twilio_sms(category, message):
 
     for recipient in recipients:
         try:
-           twilio_message = client.messages.create(body=message, from_=TWILIO_MSG_SERVICE, to='+' + recipient)
-           print(str(vars(twilio_message)))
+           twilio_message = client.messages.create(body=message, from_=TWILIO_MSG_SERVICE, to='+' + recipient, max_price=0.11)
+           logging.debug(str(vars(twilio_message)))
         except:
-           print("Could not SMS user: " + str(recipient))
+           logging.exception("Could not SMS user: " + str(recipient))
 
 def run_twilio_phone(category, message):
     response = table.scan(FilterExpression = Attr(category).contains('p'))
@@ -319,7 +323,7 @@ def run_twilio_phone(category, message):
         contact['phone_number'] = i.get('phone_number')
         contact['phone_country_code'] = i.get('phone_country_code')
 
-        print(contact)
+        logging.debug(contact)
         if category in contact and contact[category] and 'p' in contact[category] and contact.get('phone_country_code') and contact.get('phone_number'):
             recipients.append(str(contact.get('phone_country_code')) + str(contact.get('phone_number')))
 
@@ -333,9 +337,9 @@ def run_twilio_phone(category, message):
                        url=TWILIO_TWIML_BIN_URL + "?Message=" + quote_plus(message),
                        from_=TWILIO_PHONE_NUMBER,
                        to='+' + recipient)
-            print(str(vars(twilio_call)))
+            logging.debug(str(vars(twilio_call)))
         except:
-           print("Could not call user: " + str(recipient))
+           logging.exception("Could not call user: " + str(recipient))
 
 def upload_contact_list(category):
     response = table.scan(FilterExpression = Attr(category).contains('e') |Attr(category).contains('s') | Attr(category).contains('p'))
@@ -361,13 +365,12 @@ def upload_contact_list(category):
             contact['phone_number'] = i.get('phone_number')
             contact['phone_country_code'] = i.get('phone_country_code')
 
-            print(contact)
+            logging.debug(str(contact))
             if category in contact and contact[category] and 'e' in contact[category]:
                 email_file.write(f"{contact.get('email')}\n")
 
     # Now put them on sendgrid
     email_file_id = upload_email_contacts('/tmp/email.csv')
-    print(f"email_file_id: {email_file_id}")
 
     return email_file_id
 
@@ -391,19 +394,17 @@ def upload_email_contacts(filepath):
     response = sg.client.marketing.contacts.imports.put(
         request_body=data
     )
-    print(response.status_code)
-    print(response.body)
-    print(response.headers)
+
     response = json.loads(response.body)
     upload_uri = response.get('upload_uri')
     upload_headers = response.get('upload_headers')
 
-    # This respose is terrible and has to be dictionaried
+    # This response is terrible and has to be dictionaried
     upload_headers = [{pair.get('header'): pair.get('value')} for pair in upload_headers]
 
     with open(filepath, 'r') as f:
         payload = f.read()
-    print(f"Sending payload: {payload}")
+    logging.debug(f"Sending payload: {payload}")
 
     response = requests.put(upload_uri, headers=upload_headers[0], data=open(filepath,'r').read())
     response.raise_for_status()

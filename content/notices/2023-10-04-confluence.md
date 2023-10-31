@@ -1,5 +1,5 @@
 ---
-Title: Privilege escalation in Atlassian Confluence (CVE-2023-22515)
+Title: Privilege Escalation in Atlassian Confluence (CVE-2023-22515)
 Date: 2023-10-04 12:45
 Category: Services & System Applications
 Tags: Confluence, Atlassian, High Severity, CVE-2023-22515

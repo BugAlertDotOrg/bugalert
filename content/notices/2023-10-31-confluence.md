@@ -7,8 +7,8 @@ Slug: confluence
 Summary: An authorization vulnerability exploitable by unauthenticated users has been discovered in Atlassian Confluence, and has been assigned a bug alert severity of 'very high'. Exploitation of the vulnerability can cause substanial data loss. Atlassian recommends removing installations from the Internet immediately if they cannot be patched.
 ---
 
-| :exclamation:  SMS and phone notifications are not working in the United States due to new compliance requirements. Bug Alert is working with our telephony provider to resolve this as soon as possible.   |
-|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ⚠ Quick note: SMS and phone notifications are not working in the United States due to new compliance requirements. Bug Alert is working with our telephony provider to resolve this as soon as possible.   |
+|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 
 On Tuesday, October 31st, 2023, [Atlassian released a Security Advisory](https://confluence.atlassian.com/security/cve-2023-22518-improper-authorization-vulnerability-in-confluence-data-center-and-confluence-server-1311473907.html) stating that Confluence Server and Data Center editions are vulnerable to an authorization vulnerability which allows an unauthenticated attacker to cause significant data loss. Patches are available.
 

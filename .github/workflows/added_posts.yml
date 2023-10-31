@@ -40,8 +40,8 @@ jobs:
           readarray -t added_files <<<"$(jq -r '.[]' <<<'${{ steps.files.outputs.added }}')"
           for added_file in ${added_files[@]}; do
             if [[ $added_file == content/notices/* ]]; then
-              echo "File added: ${added_file}. Sleeping for two minutes to await the Pelican build."
-              sleep 120
+              echo "File added: ${added_file}. Sleeping for three minutes to await the Pelican build."
+              sleep 180
               python3 "${GITHUB_WORKSPACE}/notice_communication/__main__.py" "${added_file}"
             fi
           done

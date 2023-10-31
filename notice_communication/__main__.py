@@ -20,13 +20,13 @@ def main():
     filename = sys.argv[1]
     summary, category, title, slug, tags = get_content_meta(filename)
     url = f"https://bugalert.org/{filename.replace('md', 'html')}"
-    if os.getenv('TWITTER_BEARER_TOKEN') and category != "dev":
-        twitter = get_twitter_client()
-        tweet_summary = summary[:220] if len(summary) > 220 else summary
-        ellipsis = "..." if len(summary) > 220 else ""
-        hashtag = "#BugAlertNews" if category == "bug_alert_news" else "#BugAlertNotice"
-        tweet = f"{f'{tweet_summary}{ellipsis}'} {url}?src=tw {hashtag}"
-        twitter.create_tweet(text=tweet)
+    #if os.getenv('TWITTER_BEARER_TOKEN') and category != "dev":
+    #    twitter = get_twitter_client()
+    #    tweet_summary = summary[:220] if len(summary) > 220 else summary
+    #    ellipsis = "..." if len(summary) > 220 else ""
+    #    hashtag = "#BugAlertNews" if category == "bug_alert_news" else "#BugAlertNotice"
+    #    tweet = f"{f'{tweet_summary}{ellipsis}'} {url}?src=tw {hashtag}"
+    #    twitter.create_tweet(text=tweet)
 
     if category == "bug_alert_news":
         return

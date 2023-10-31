@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Bug Alert - Telegram</title><link href="https://bugalert.org/" rel="alternate"></link><link href="https://bugalert.org/feeds/telegram.atom.xml" rel="self"></link><id>https://bugalert.org/</id><updated>2022-01-11T23:00:00+00:00</updated><subtitle>A nonprofit service for alerting security and IT professionals of high-impact and 0day vulnerabilities.</subtitle><entry><title>Post-Launch Updates: Telegram Support, Community Slack, and Celebrating Success</title><link href="https://bugalert.org/content/notices/2022-01-11-post-launch.html" rel="alternate"></link><published>2022-01-11T23:00:00+00:00</published><updated>2022-01-11T23:00:00+00:00</updated><author><name>Bug Alert Contributors</name></author><id>tag:bugalert.org,2022-01-11:/content/notices/2022-01-11-post-launch.html</id><summary type="html">&lt;p&gt;The Bug Alert team is celebrating a successful launch with more features (Telegram support!), a community Slack, and more.&lt;/p&gt;</summary><content type="html">&lt;p align="center"&gt; 
+    &lt;img width="50%" src="https://i.imgur.com/TbDWmWr.png"&gt; 
+&lt;/p&gt;
+
+&lt;p&gt;The Bug Alert team is happy to announce Telegram support! &lt;a href="https://t.me/s/BugAlert"&gt;Join our Telegram channel&lt;/a&gt; to receive vulnerability notices in real-time.&lt;/p&gt;
+&lt;p&gt;This functionality was contributed by a member of our volunteer team, &lt;a href="https://github.com/BugAlertDotOrg/bugalert/pull/26"&gt;Ethan Schorer&lt;/a&gt;. Thanks Ethan!&lt;/p&gt;
+&lt;hr&gt;
+
+&lt;p align="center"&gt; 
+    &lt;img width="40%" src="https://i.imgur.com/EKU8YJB.png"&gt; 
+&lt;/p&gt;
+&lt;p&gt;Stay up to date on the latest Bug Alert news or come chat vulnerabilities in our public Slack workspace. This is also where the volunteer team discusses features and updates, and we'd be happy to get your input as well!&lt;/p&gt;
+&lt;p&gt;&lt;a href="https://join.slack.com/t/bug-alert/shared_invite/zt-1199f3i50-Fz2kn0D3Oa1z3fQBHTdzAw"&gt;Click here to create an account.&lt;/a&gt;&lt;/p&gt;
+&lt;hr&gt;
+
+&lt;p align="center"&gt; 
+    &lt;font size="100%"&gt; &amp;#x1f389; Post-Launch Celebration&lt;/font&gt;
+&lt;/p&gt;
+
+&lt;p&gt;Over 1,000 subscribers have registered with Bug Alert, which is far in excess of what I could have imagined just a week ago. I am honored you agree that Bug Alert is a potential solution to a very real problem, and as a community, we'll work to improve security across the world.&lt;/p&gt;
+&lt;p&gt;If you have suggestions for Bug Alert, or wish functionality existed which doesn't today, please &lt;a href="https://github.com/BugAlertDotOrg/bugalert/issues"&gt;file an issue on GitHub&lt;/a&gt; and let us know! If you know Python, we'd also love to have you contribute to our codebase to make those ideas a reality.&lt;/p&gt;
+&lt;p&gt;Thanks again for making Bug Alert an early success. We look forward to what the future has in store.&lt;/p&gt;
+&lt;hr&gt;
+
+&lt;p&gt;P.S. If you haven't already, &lt;a href="https://twitter.com/BugAlertDotOrg"&gt;follow us on Twitter&lt;/a&gt;. While notices are also posted to Twitter, we'll also use the platform for disseminating less pressing, informational content, such as minor feature enhancements or bugfixes. Notices will always be tagged with &lt;code&gt;#BugAlertNotice&lt;/code&gt;, which you can use for filtering alerts if you are utilizing tools like IFTTT to monitor the feed and only want to see the emergency stuff. Hope to see you there!&lt;/p&gt;</content><category term="Bug Alert News"></category><category term="Telegram"></category><category term="Slack"></category></entry></feed>
